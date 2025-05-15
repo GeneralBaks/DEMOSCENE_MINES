@@ -42,10 +42,26 @@ ROWS            = 9               ; Количество строк
 ;                   СОСТОЯНИЯ ЯЧЕЕК 
 ; -----------------------------------------------------
 CELL_HIDDEN     = 0               ; Закрыта
-CELL_OPENED     = 1               ; Открыта (не мина)
-CELL_FLAGGED    = 2               ; Помечена флажком
-CELL_QUESTION   = 3               ; Помечена вопросом
-CELL_EXPLODED   = 4               ; Взорвана (если была мина)
+CELL_MINE_H_1	= 1				  ; Закрыта и рядом n мин
+CELL_MINE_H_2	= 2
+CELL_MINE_H_3	= 3
+CELL_MINE_H_4	= 4
+CELL_MINE_H_5	= 5
+CELL_MINE_H_6	= 6
+CELL_MINE_H_7	= 7
+CELL_MINE_H_8	= 8
+CELL_MINE_O_1	= 9				  ; Открыта и рядом n мин
+CELL_MINE_O_2	= 10
+CELL_MINE_O_3	= 11
+CELL_MINE_O_4	= 12
+CELL_MINE_O_5	= 13
+CELL_MINE_O_6	= 14
+CELL_MINE_O_7	= 15
+CELL_MINE_O_8	= 16
+CELL_OPENED		= 17			  ; Открыта (не мина)
+CELL_FLAGGED    = 18              ; Помечена флажком
+CELL_QUESTION   = 19              ; Помечена вопросом
+CELL_EXPLODED   = 20              ; Взорвана (если была мина)
 
 ; -----------------------------------------------------
 ;                   КНОПКИ МЫШИ 
