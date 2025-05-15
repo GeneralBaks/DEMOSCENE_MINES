@@ -1,17 +1,18 @@
-; è†≠•´Ï „Ø‡†¢´•≠®Ô (¢•‡Â≠ÔÔ)
+; –ü–∞–Ω–µ–ª—å —É–ø—Ä–∞–≤–ª–µ–Ω–∏—è (–≤–µ—Ä—Ö–Ω—è—è)
 struct PanelControl Panel
-	lb_mines Label
-	lb_timer Label
-	bt_exit  Button
+	lb_mines   Label
+	lb_timer   Label
+	bt_exit    Button
+	bt_options Button
 ends
 
-; è†≠•´Ï ØÆ´Ô (≠®¶≠ÔÔ), ·Æ§•‡¶®‚ ·•‚™„ ® ‰„≠™Ê®Ó Ê•≠‚‡®‡Æ¢†≠®Ô
+; –ü–∞–Ω–µ–ª—å –ø–æ–ª—è (–Ω–∏–∂–Ω—è—è), —Å–æ–¥–µ—Ä–∂–∏—Ç —Å–µ—Ç–∫—É –∏ —Ñ—É–Ω–∫—Ü–∏—é —Ü–µ–Ω—Ç—Ä–∏—Ä–æ–≤–∞–Ω–∏—è
 struct PanelField Panel
 	gr_field Grid
 	centralize_grid dw ?
 ends
 
-; É´†¢≠†Ô ‰Æ‡¨† ®£‡Î
+; –ì–ª–∞–≤–Ω–∞—è —Ñ–æ—Ä–º–∞ –∏–≥—Ä—ã
 struct FormMain Form
 	pn_control PanelControl
 	pn_field PanelField
@@ -28,18 +29,21 @@ lb_t_y = 16 + pn_up_y
 bt_ex_x = pn_up_x + 308 - 33 
 bt_ex_y = lb_t_y
 
+bt_op_x = pn_up_x + 308 - 33 
+bt_op_y = lb_m_y
+
 pn_fl_x = 2 + inner_x
 pn_fl_y = 33 + inner_y
 gr_fl_x = 1 + pn_fl_x
 gr_fl_y = 1 + pn_fl_y
 
 fm_main FormMain \
-	x, y, SCR_W, SCR_H, CL_GREY_1, \
-	bw, CL_GREY_1, auto_draw_form, \
+	x, y, SCR_W, SCR_H, CL_CYAN_0, \
+	bw, CL_GREY_0, auto_draw_form, \
 	<pn_up_x, pn_up_y, 308, 29, CL_GREY_1, FRM_REV, auto_draw_panel, \
 	<lb_m_x, lb_m_y, 20, 11, CL_BLACK, FRM_REV, str_mines_amount, CL_RED_1, auto_draw_label>, \
 	<lb_t_x, lb_t_y, 26, 11, CL_BLACK, FRM_REV, str_timer, CL_BLUE_1, auto_draw_label>, \
-	<bt_ex_x, bt_ex_y, 30, STD_LBL_H, CL_GREY_1, FRM_STD, str_exit, CL_CYAN_0, BTN_NORM, auto_draw_button, fm_main_exit_button_click>>, \
+	<bt_ex_x, bt_ex_y, 30, STD_LBL_H, CL_GREY_1, FRM_STD, str_exit, CL_CYAN_1, BTN_NORM, auto_draw_button, fm_main_exit_button_click>>, \
 	<pn_fl_x, pn_fl_y, 308, 157, CL_GREY_1, FRM_REV, auto_draw_panel, \
 	<gr_fl_x, gr_fl_y, 308, 157, CL_GREY_0, FRM_REV, COLS, ROWS, NONE, \
 	auto_resize, auto_draw_grid, auto_draw_cell,auto_fill_grid, fm_main_grid_button_click>, auto_centralize>

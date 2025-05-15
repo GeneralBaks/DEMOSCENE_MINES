@@ -487,7 +487,7 @@ macro _generate_matrix _cols, _rows {
 	
 	elem = _cols * _rows
 	.size dw elem
-	.elements dw elem dup (0)
+	.elements db elem dup (0)
 }
 
 

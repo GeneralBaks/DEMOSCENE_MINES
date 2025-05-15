@@ -1,5 +1,8 @@
 field_matrix: 
-	_generate_matrix COLS, ROWS
+	.cols dw COLS
+	.rows dw ROWS
+    .size dw COLS * ROWS
+	.elements db COLS * ROWS dup(0)
 	
 arr_cursor_back array CURSOR_SIZE * CURSOR_SIZE
 

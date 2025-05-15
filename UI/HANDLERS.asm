@@ -68,7 +68,7 @@ proc fm_main_grid_button_click
             mov cx, [field_matrix.cols]  ; Кол-во столбцов
             imul dx, cx                               ; dx = row * cols
             add dx, ax                                ; dx = row * cols + col
-            shl dx, 1                                  ; умножаем на 2 (2 байта на ячейку)
+;            shl dx, 1                                  ; умножаем на 2 (2 байта на ячейку)
 
             ; Получаем адрес нужной ячейки
             mov bx,field_matrix.elements
@@ -77,12 +77,12 @@ proc fm_main_grid_button_click
             ; Восстанавливаем координаты (1-based)
             pop dx ax
 
-            _if word [bx] == CELL_HIDDEN
-                mov word [bx], CELL_OPENED
-                stdcall restore_cursor_background, [cursor_x], [cursor_y]
-                _mcall fm_main.pn_field.gr_field:draw_cell, <ax, dx, CELL_OPENED>
-                stdcall save_cursor_background, [cursor_x], [cursor_y]
-                stdcall draw_cursor, [cursor_x], [cursor_y]
+            _if byte[bx] == CELL_HIDDEN
+                mov byte[bx], CELL_OPENED
+                stdcall restore_cursor_background, [cursor_x],[cursor_y]
+                _mcall fm_main.pn_field.gr_field:draw_cell, <ax,dx,CELL_OPENED>
+                stdcall save_cursor_background, [cursor_x],[cursor_y]
+                stdcall draw_cursor, [cursor_x],[cursor_y]
             _end
         _end
     _end
@@ -91,5 +91,14 @@ endp
 
 proc fm_exit_yes_button_click
 	mov [game_state],GAME_EXIT
+	ret
+endp
+
+proc fm_exit_no_button_click
+	mov [active_form_index],ACTIVE_MAIN
+	stdcall restore_cursor_background, [cursor_x],[cursor_y]
+	stdcall draw_fm_main
+	stdcall save_cursor_background, [cursor_x],[cursor_y]
+	stdcall draw_cursor, [cursor_x],[cursor_y]
 	ret
 endp

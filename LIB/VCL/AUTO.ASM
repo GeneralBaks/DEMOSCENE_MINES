@@ -110,11 +110,13 @@ endp
 proc auto_fill_grid \
 	_grid_
 	mov bx,[_grid_]
+	mov si,field_matrix.elements
 	_for ax=[bx+14] downto 1
 		_for cx=[bx+12] downto 1
 			push ax cx bx
-			stdcall auto_draw_cell, bx,cx,ax,CELL_HIDDEN 
+			stdcall auto_draw_cell, bx,cx,ax,[si]
 			pop bx cx ax
+			inc si
 		_end
 	_end
 	ret
