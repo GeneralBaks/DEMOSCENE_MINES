@@ -92,73 +92,76 @@ macro _endloop {
 }
 
 ; ========= FOR =============
-; Поддерживает 3 формы:
-; 1. C-style: _for var=init:cond:step
-; 2. Range up: _for var=start to end
-; 3. Range down: _for var=start downto end
+; Только С стиль
 macro _for param* {
 	local ..begpos, ..endpos
 	beg equ ..begpos ; Метка начала цикла
 	lst_loop_end equ ..endpos ; Метка выхода
 	
-	define fordef 0
+	define definstr 0
+	define defvar 0
 	
-	; Обработка формы: var = val : cond : step
-	match =0 var == start_val : cond : step , fordef param \{
-		mov var,start_val
+	match assign:cond:step, param \{
+		match var == num, assign \\{
+			mov var,num
+			for_var equ var
+			define defvar 1
+		\\}
 		
+		match =0 var,defvar assign \\{
+			for_var equ var
+			define defvar 1
+		\\}
+	
 		beg:
-		gen_cmp_jmp_rev cond,lst_loop_end ; Проверка условия
 		
-		define fordef 1
+		gen_cmp_jmp_rev cond,lst_loop_end
 		
-		for_itr equ var   ; Сохраняем переменную
-		for_step equ step ; и шаг
+		match =0 =- =1, definstr step \\{
+			define definstr dec
+		\\}
+		
+		match =0 =1, definstr step \\{
+			define definstr inc
+		\\}
+		
+		match =0 =- num, definstr step \\{
+			define definstr sub
+			for_num equ num
+		\\}
+		
+		match =0 num, definstr step \\{
+			define definstr add
+			for_num equ num
+		\\}
 	\}
-	
-	; Обработка формы: var = val to final
-	match =0 var == start_val =to final_val, fordef param \{
-		mov var, start_val
-		beg:
-		
-		cmp var,final_val ; Проверка границы
-		jg lst_loop_end
-		for_instr equ inc ; Устанавливаем инкремент
 
-		for_itr equ var
-	\}
-	
-	; Обработка формы: var = val downto final
-	match =0 var == start_val =downto final_val, fordef param \{
-		mov var, start_val
-		beg:
-		
-		cmp var,final_val ; Проверка границы
-		jl lst_loop_end
-		for_instr equ dec ; Устанавливаем декремент
-		
-		for_itr equ var
-	\}
-	
 	_end_ equ _for_ ; Для универсального _end
 }
 
 macro _endfor {
-	; Обновляем переменную цикла
-	match =1, fordef \{
-		add for_itr,for_step ; C-style с шагом
+	match =inc,definstr \{
+		inc for_var
 	\}
 	
-	match =0, fordef \{
-		for_instr for_itr ; Просто inc/dec
+	match =dec,definstr \{
+		dec for_var
+	\}
+	
+	match =sub,definstr \{
+		sub for_var,for_num
+		restore for_num
+	\}
+	
+	match =add,definstr \{
+		add for_var,for_num
+		restore for_num
 	\}
 	
 	jmp beg			; Следующая итерация
 	lst_loop_end:   ; Выход
 	
-	restore for_step
-	restore for_itr
-	restore for_instr
+	restore for_var
 	restore beg
 	restore lst_loop_end
 	restore _end_
@@ -288,6 +291,7 @@ macro _if param* {
 	if_fin equ ..end	 ; Метка конца блока
 	curif equ ..if_local ; Текущая метка
 	 
+	define has_else 0
 	define isdef 0
 	; Форма с переходом: _if cond jmp label
 	match =0 cond =jmp lbl, isdef param \{
@@ -310,6 +314,8 @@ macro _else {
 	jmp if_fin ; Пропускаем блок else
 	curif:	   ; Продолжение if
 	restore curif
+	
+	define has_else 1
 }
 
 ; Блок elseif
@@ -329,8 +335,10 @@ macro _elseif param* {
 
 ; Конец условного блока
 macro _endif {
-	curif:
-	restore curif
+	match =0, has_else \{
+		curif:
+		restore curif
+	\}
 	
 	if_fin:
 	restore if_fin
@@ -528,4 +536,13 @@ macro _generate_cord param {
 
 macro _init_component name, type, [field:value] {
 	
+}
+	
+macro _calc_offset x,y,reg {
+	if ~ reg in <ax,cx,dx,bx,si,di>
+		display "last variable should be reg"
+		err
+	end if
+	imul reg,y,SCR_W
+	add reg,x
 }

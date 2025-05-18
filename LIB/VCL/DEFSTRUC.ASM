@@ -1,8 +1,8 @@
 struct UIElement
     x       dw ?    ; Позиция X
     y       dw ?    ; Позиция Y
-    w       dw ?    ; Ширина (для элементов с размером)
-    h       dw ?    ; Высота
+    wt       dw ?    ; Ширина (для элементов с размером)
+    ht       dw ?    ; Высота
     color   dw ?    ; Основной цвет
 ends
 
@@ -17,6 +17,13 @@ struct Label UIElement
     text    dw ?    ; Указатель на строку
 	text_color dw ?
 	draw    dw ?    ; Метод отрисовки
+ends
+
+struct Edit UIElement
+	frame dw ?
+	text dw ?
+	text_color dw ?
+	draw dw ?
 ends
 
 ; Кнопка (наследуется от Label)
@@ -54,7 +61,8 @@ ends
 struct Clickable
     x       dw ?
     y       dw ?
-    w       dw ?
-    h       dw ?
+    wt       dw ?
+    ht       dw ?
     handler dw ?    ; Указатель на функцию on_click
 ends
+

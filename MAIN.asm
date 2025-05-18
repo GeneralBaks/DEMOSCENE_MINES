@@ -1,44 +1,4 @@
 ;MINES - Игра "Сапёр" на ассемблере
-;│
-;├── MAIN.ASM         - Основной файл программы, точка входа
-;├── MAIN.com         - Скомпилированный исполняемый файл
-;├── CONFIG.ASM       - Конфигурационные настройки и константы
-;│
-;├── GAME             - Игровая логика и данные
-;│   ├── DATA         - Игровые данные и ресурсы
-;│   │   ├── CHARS.ASM     - Символы для отрисовки
-;│   │   ├── STORAGE.ASM   - Храниоище игровых игровых данных
-;│   │   └── STRINGS.ASM   - Строковые константы и сообщения
-;│   ├─── LOGIC.ASM    - Игровая логика (алгоритмы, правила)
-;│   └── RANDOM.ASM        - Рандомайзер
-;│
-;├── INPUT            - Модули обработки пользовательского ввода
-;│   ├── KEYBOARD.ASM - Обработка клавиатуры
-;│   └── MOUSE        - Модули работы с мышью
-;│       ├── DATA.ASM      - Данные для работы с мышью
-;│       ├── DRAW.ASM      - Отрисовка курсора мыши
-;│       └── LOGIC.ASM     - Обработка событий мыши
-;│
-;├── LIB              - Библиотеки и общие компоненты
-;│   ├── MACROS.ASM   - Макросы для структурного программирования
-;│   ├── PROC16.INC   - Определения для работы с процедурами в 16-битном режиме
-;│   ├── STRUCT.INC   - Определения структур данных
-;│   ├── UTILS.ASM    - Вспомогательные функции и утилиты
-;│   └── VCL          - Visual Component Library (библиотека компонентов)
-;│       ├── AUTO.ASM      - Автоматические обёртки для методов
-;│       ├── DEFSTRUC.ASM  - Определения структур компонентов
-;│       ├── DRAW.ASM      - Базовые функции отрисовки
-;│       └── METHODS.ASM   - Методы работы с компонентами
-;│
-;└── UI               - Компоненты пользовательского интерфейса
-;    ├── DATA.ASM     - Данные интерфейса
-;    ├── DRAW.ASM     - Функции отрисовки UI-элементов
-;    ├── EXIT.ASM     - Форма подтверждения выхода
-;    ├── HANDLERS.ASM - Обработчики событий интерфейса
-;    ├── MAINFORM.ASM - Основная форма приложения
-;    └── OPTIONS.ASM  - Форма настроек игры
-
-
 include "LIB\PROC16.INC"
 include "LIB\STRUCT.INC"
 include "LIB\MACROS.ASM"
@@ -59,21 +19,29 @@ include "CONFIG.ASM"
 ; --------------------------------------------------------------
 ;                        Точка входа программы
 ; --------------------------------------------------------------
-org 100h
+org 100h		
 start:
     ; Инициализация видеорежима 13h (320x200, 256 цветов)
     stdcall set_video_mod_to_13h
-
+	
+	stdcall fm_main_centralize_buttons
+	stdcall fm_options_centralize_buttons
+;	stdcall fm_custom_options_centralize_buttons
+	
     ; Отрисовка главной формы
 	stdcall draw_fm_main
-	
-    ; Инициализация мыши
+	; Инициализация мыши
 	stdcall init_mouse
 	
     ; Основной цикл программы
 	_repeat
 		stdcall mouse_handle    ; Обработка событий мыши
 		stdcall keyboard_handle ; Обработка клавиатуры
+		_if [game_state] == GAME_PLAY
+			stdcall update_timer, fm_main.pn_control.lb_timer
+		_else
+			stdcall get_start_time
+		_end
 	_until [game_state] == GAME_EXIT
 	
     ; Восстановление исходного видеорежима
@@ -170,18 +138,23 @@ include "LIB\UTILS.ASM"
 ; Обработчики пользовательского интерфейса
 include "UI\HANDLERS.ASM"        ; Обработчики событий
 include "UI\DRAW.ASM"            ; Отрисовка интерфейса
+include "UI\PREPCOMP.ASM"
 
 ; Определения структур компонентов
 include "LIB\VCL\DEFSTRUC.ASM"
 
 ; Формы пользовательского интерфейса
-include "UI\MAINFORM.ASM"        ; Основная форма
-include "UI\OPTIONS.ASM"         ; Форма настроек
-include "UI\EXIT.ASM"            ; Форма выхода
-include "UI\DATA.ASM"            ; Данные интерфейса
+include "UI\FORMS\MAINFORM.ASM"        ; Основная форма
+include "UI\FORMS\OPTIONS.ASM"         ; Форма настроек
+include "UI\FORMS\CUSTOM.ASM"
+include "UI\FORMS\EXIT.ASM"            ; Форма выхода
+include "UI\TIMER.ASM"
 
 ; Игровые данные
+include "UI\DATA\CHARS.ASM"					
+include "UI\DATA\STRINGS.ASM"
+include "UI\DATA\CLKDATA.ASM"
+include "UI\DATA\SCRDATA.ASM"
+include "UI\DATA\TIMEDATA.ASM"
 include "INPUT\MOUSE\DATA.ASM"   ; Данные мыши
-include "GAME\DATA\STRINGS.ASM"  ; Строковые константы
-include "GAME\DATA\CHARS.ASM"    ; Символы и шрифты
 include "GAME\DATA\STORAGE.ASM"  ; Структуры для хранения игровых данных

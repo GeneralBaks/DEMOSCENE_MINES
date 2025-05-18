@@ -7,12 +7,28 @@ proc fm_main_exit_button_click
 	ret
 endp
 
+proc fm_main_reset_button_click
+	test [mouse_button],BTN_LEFT
+	_if zf == 0 
+		mov cx,[field_matrix.size]
+		inc cx
+		_set_seg es to ds
+		stdcall clr_arr, field_matrix.elements,cx
+		_unset_seg
+		
+		stdcall reset_timer
+		_mcall fm_main.pn_control.lb_timer:draw
+		_mcall fm_main.pn_field.gr_field:draw
+		_mcall fm_main.pn_field.gr_field:fill_grid, <field_matrix>
+	_end
+	ret
+endp
+
 proc find_clicked_cell \
 	grid
 	mov bx,[grid]
 	mov ax,[bx]
 	mov dx,[bx+2]
-	
 	_loop [bx+14]
 		_loop [bx+12]
 			push ax dx
@@ -57,24 +73,20 @@ proc fm_main_grid_button_click
     _if zf == 0
         stdcall find_clicked_cell, fm_main.pn_field.gr_field
        _if cx ~= 0
-            ; Сохраняем координаты (1-based) на стек
-            push ax dx  ; ax = col (1-based), dx = row (1-based)
-
             ; Переводим в 0-based индексы
             dec ax     ; ax = col (0-based)
             dec dx     ; dx = row (0-based)
-
+			push ax dx 
             ; Вычисляем смещение: (row * cols + col) * 2
             mov cx, [field_matrix.cols]  ; Кол-во столбцов
             imul dx, cx                               ; dx = row * cols
             add dx, ax                                ; dx = row * cols + col
-;            shl dx, 1                                  ; умножаем на 2 (2 байта на ячейку)
 
             ; Получаем адрес нужной ячейки
             mov bx,field_matrix.elements
-            add bx,dx                                 
+            add bx,dx 
 
-            ; Восстанавливаем координаты (1-based)
+            ; Восстанавливаем координаты (0-based)
             pop dx ax
 
             _if byte[bx] == CELL_HIDDEN
@@ -84,21 +96,121 @@ proc fm_main_grid_button_click
                 stdcall save_cursor_background, [cursor_x],[cursor_y]
                 stdcall draw_cursor, [cursor_x],[cursor_y]
             _end
+			
+			_if [game_state] == GAME_WAIT
+				mov byte[game_state],GAME_PLAY
+			_end
         _end
     _end
     ret
 endp
 
 proc fm_exit_yes_button_click
-	mov [game_state],GAME_EXIT
+	test [mouse_button],BTN_LEFT
+	_if zf == 0 
+		mov [game_state],GAME_EXIT
+	_end
 	ret
 endp
 
 proc fm_exit_no_button_click
-	mov [active_form_index],ACTIVE_MAIN
-	stdcall restore_cursor_background, [cursor_x],[cursor_y]
-	stdcall draw_fm_main
-	stdcall save_cursor_background, [cursor_x],[cursor_y]
-	stdcall draw_cursor, [cursor_x],[cursor_y]
+	test [mouse_button],BTN_LEFT
+	_if zf == 0 
+		mov [active_form_index],ACTIVE_MAIN
+		stdcall restore_cursor_background, [cursor_x],[cursor_y]
+		stdcall draw_fm_main
+		stdcall save_cursor_background, [cursor_x],[cursor_y]
+		stdcall draw_cursor, [cursor_x],[cursor_y]
+	_end
+	ret
+endp
+
+proc fm_main_options_button_click
+	test [mouse_button],BTN_LEFT
+	_if zf == 0 
+		stdcall draw_fm_options
+		mov [active_form_index], ACTIVE_OPTIONS
+	_end
+	ret
+endp
+
+proc fm_options_easy_button_click
+	stdcall difficulty_button_click, EASY_COLS, EASY_ROWS
+	ret
+endp
+
+proc difficulty_button_click \
+	cols, rows
+	test [mouse_button],BTN_LEFT
+	_if zf == 0 
+		mov cx,[field_matrix.size]
+		inc cx
+		_set_seg es to ds
+		stdcall clr_arr, field_matrix.elements,cx
+		_unset_seg
+		
+		mov ax,[cols]
+		mov cx,[rows]
+		mov [fm_main.pn_field.gr_field.cols],ax
+		mov [field_matrix.cols],ax
+		mov [fm_main.pn_field.gr_field.rows],cx
+		mov [field_matrix.rows],ax
+		mul cx
+		mov [field_matrix.size],ax
+		
+		stdcall reset_timer
+		
+		mov [active_form_index],ACTIVE_MAIN
+		stdcall restore_cursor_background, [cursor_x],[cursor_y]
+		stdcall draw_fm_main
+		stdcall save_cursor_background, [cursor_x],[cursor_y]
+		stdcall draw_cursor, [cursor_x],[cursor_y]
+	_end
+	ret
+endp
+
+proc fm_options_medium_button_click
+	stdcall difficulty_button_click, MEDIUM_COLS, MEDIUM_ROWS
+	ret
+endp
+
+proc fm_options_hard_button_click
+	stdcall difficulty_button_click, HARD_COLS, HARD_ROWS
+	ret
+endp
+
+proc fm_custom_options_back_button_click
+	test [mouse_button],BTN_LEFT
+	_if zf == 0 
+		mov [active_form_index],ACTIVE_OPTIONS
+		stdcall restore_cursor_background, [cursor_x],[cursor_y]
+		stdcall draw_fm_options
+		stdcall save_cursor_background, [cursor_x],[cursor_y]
+		stdcall draw_cursor, [cursor_x],[cursor_y]
+	_end
+	ret
+endp
+
+proc fm_options_custom_button_click
+	test [mouse_button],BTN_LEFT
+	_if zf == 0 
+		mov [active_form_index],ACTIVE_CUSTOM_OPTIONS
+		stdcall restore_cursor_background, [cursor_x],[cursor_y]
+		stdcall draw_fm_custom_options
+		stdcall save_cursor_background, [cursor_x],[cursor_y]
+		stdcall draw_cursor, [cursor_x],[cursor_y]
+	_end
+	ret
+endp
+
+proc fm_options_back_button_click
+	test [mouse_button],BTN_LEFT
+	_if zf == 0 
+		mov [active_form_index],ACTIVE_MAIN
+		stdcall restore_cursor_background, [cursor_x],[cursor_y]
+		stdcall draw_fm_main
+		stdcall save_cursor_background, [cursor_x],[cursor_y]
+		stdcall draw_cursor, [cursor_x],[cursor_y]
+	_end
 	ret
 endp

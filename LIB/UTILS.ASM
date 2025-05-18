@@ -98,9 +98,9 @@ proc word_to_str uses si, \
 		
 		test ax,ax			;продолжаем цикл, пока целая часть не 0
 		jnz .lp_push_num
-	_until ax != 0
+	_until ax ~= 0
 
-	_while si != 0
+	_while si ~= 0
 		pop ax
 		mov [bx],al
 		inc bx
@@ -500,17 +500,74 @@ endp
 ;=============================
 ;заполняет строку 00h
 ;Требуется:
-;в di адрес строки, cx - количество элементов
+;в arr адрес строки, len - количество элементов
 ;Результат:
 ;пустая строка 
-clr_arr:
-		push ax cx di
-.init:		
-		dec cx
-		xor ax,ax
-		cld
-.clear:		
-		rep stosb		
-.epi:
-		pop di cx ax
-		ret
+proc clr_arr \
+	arr, len
+	
+	mov cx,[len]
+	mov di,[arr]
+	
+	dec cx
+	xor ax,ax
+	cld
+	rep stosb		
+	
+	ret
+endp
+		
+proc centralize_cord \
+	out_cord, out_wt, wt
+	
+	mov ax,[out_wt]
+	sub ax,[wt]
+	shr ax,1
+	add ax,[out_cord]
+	
+	ret
+endp
+
+;============================
+;Преобразуем число в строку
+;В num число(0,65535) | string - куда заносить результат 
+proc word_to_str_time uses si, \
+		num, string
+        
+	mov ax,[num]
+	mov bx,[string]
+	xor si,si
+
+	mov cx,10
+	
+	_repeat
+		xor dx,dx
+		div cx    
+		
+		add dl,'0'
+		push dx
+		
+		inc si
+	_until ax == 0
+	
+	mov cx,3
+	sub cx,si
+	
+	_if cx > 0
+		_loop
+			mov byte[bx],'0'
+			inc bx
+		_end
+	_end
+
+	_while si ~= 0
+		pop ax
+		mov [bx],al
+		inc bx
+		
+		dec si
+	_end	
+		
+	mov byte[bx],00h
+    ret
+endp

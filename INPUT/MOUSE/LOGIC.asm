@@ -106,9 +106,11 @@ proc mouse_handle
     mov ax, [cursor_x]
     cmp ax, [prev_x]
     jne .position_changed
+	
     mov ax, [cursor_y]
     cmp ax, [prev_y]
     jne .position_changed
+	
     jmp .end_proc
     
 .position_changed:

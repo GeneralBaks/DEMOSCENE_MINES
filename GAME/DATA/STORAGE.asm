@@ -1,12 +1,9 @@
 field_matrix: 
-	.cols dw COLS
-	.rows dw ROWS
-    .size dw COLS * ROWS
-	.elements db COLS * ROWS dup(0)
-	
-arr_cursor_back array CURSOR_SIZE * CURSOR_SIZE
+	.cols dw MAX_COLS
+	.rows dw MAX_ROWS
+    .size dw MAX_COLS * MAX_ROWS
+	.elements db MAX_COLS * MAX_ROWS dup(0)
 
-timer dw 0
 mines_amount dw ?
 
-game_state db 0
+game_state db GAME_WAIT

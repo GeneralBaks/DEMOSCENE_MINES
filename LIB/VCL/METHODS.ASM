@@ -1,43 +1,44 @@
 ; Центрирование поля по центру панели
-proc centralize_cord \
-		panel_x, panel_y, panel_w, panel_h, \
+proc centralize_grid_cord \
+		panel_x, panel_y, panel_wt, panel_ht, \
 		cols, rows, cell_size
 		
 	locals
 		new_grid_x dw ?
 		new_grid_y dw ?
-		new_grid_w dw ?
-		new_grid_h dw ?
+		new_grid_wt dw ?
+		new_grid_ht dw ?
 	endl
 		
 	mov ax,[cell_size]
 	imul ax,[cols]
 	add ax,[cols]
-	mov [new_grid_w],ax
+	mov [new_grid_wt],ax
 	
-	mov ax,[panel_w]
-	sub ax,[new_grid_w]
+	mov ax,[panel_wt]
+	sub ax,[new_grid_wt]
 	shr ax,1
 	add ax,5
-	
+	inc ax
 	mov [new_grid_x],ax
 	
 	mov ax,[cell_size]
 	imul ax,[rows]
 	add ax,[rows]
-	mov [new_grid_h],ax
+	inc ax
+	mov [new_grid_ht],ax
 	
-	mov ax,[panel_h]
-	sub ax,[new_grid_h]
+	mov ax,[panel_ht]
+	sub ax,[new_grid_ht]
 	shr ax,1
 	add ax,[panel_y]
-	
+	inc ax
 	mov [new_grid_y],ax
 	
 	mov ax,[new_grid_x]
 	mov cx,[new_grid_y]
-	mov dx,[new_grid_w]
-	mov bx,[new_grid_h]
+	mov dx,[new_grid_wt]
+	mov bx,[new_grid_ht]
 	
 	ret
 endp
