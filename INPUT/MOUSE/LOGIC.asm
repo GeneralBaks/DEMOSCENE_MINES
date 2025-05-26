@@ -2,27 +2,21 @@ proc init_mouse
     xor ax,ax  
     int 33h     
     
-	_if ax~=0FFFFh jmp .no_mouse ; РџСЂРѕРІРµСЂРєР°, РґРѕСЃС‚СѓРїРµРЅ Р»Рё РґСЂР°Р№РІРµСЂ РјС‹С€Рё (AX Р±СѓРґРµС‚ 0FFFFh РµСЃР»Рё РґР°)
+    _if ax~=0FFFFh jmp .no_mouse 
    
-
-    mov ax,7       ; РЈСЃС‚Р°РЅРѕРІРєР° РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅС‹С… РіСЂР°РЅРёС†
+    mov ax,7       ; Установка горизонтальных границ курсора
     xor cx,cx      ; Min X = 0
     mov dx,SCR_W-1 ; Max X = 319 
     int 33h
     
-    mov ax,8       ; РЈСЃС‚Р°РЅРѕРІРєР° РІРµСЂС‚РёРєР°Р»СЊРЅС‹С… РіСЂР°РЅРёС†
+    mov ax,8       ; Установка вертикальных границ курсора
     xor cx,cx      ; Min Y = 0  
     mov dx,SCR_H-1 ; Max Y = 199
     int 33h
     
-    ; РЎРѕС…СЂР°РЅРёРј РЅР°С‡Р°Р»СЊРЅСѓСЋ РїРѕР·РёС†РёСЋ РґР»СЏ РґР°Р»СЊРЅРµР№С€РµР№ СЂР°Р±РѕС‚С‹
-    stdcall get_mouse_state
-    
-    ; РЎРѕС…СЂР°РЅСЏРµРј С„РѕРЅ РїРѕРґ РЅР°С‡Р°Р»СЊРЅРѕР№ РїРѕР·РёС†РёРµР№ РєСѓСЂСЃРѕСЂР°
-    stdcall save_cursor_background, [cursor_x],[cursor_y]
-    
-    ; РћС‚СЂРёСЃРѕРІС‹РІР°РµРј РєСѓСЂСЃРѕСЂ РІ РЅР°С‡Р°Р»СЊРЅРѕР№ РїРѕР·РёС†РёРё
-    stdcall draw_cursor, [cursor_x],[cursor_y]
+    stdcall get_mouse_state     ; Получение текущей позиции
+    stdcall save_cursor_background, [cursor_x],[cursor_y]  ; Сохранение фона
+    stdcall draw_cursor, [cursor_x],[cursor_y]             ; Отрисовка курсора
     
     ret
     
@@ -30,129 +24,121 @@ proc init_mouse
     ret
 endp
 
-; РџРѕР»СѓС‡РёС‚СЊ С‚РµРєСѓС‰СѓСЋ РїРѕР·РёС†РёСЋ РєСѓСЂСЃРѕСЂР°
+; Получение текущего состояния мыши
 proc get_mouse_state
-    mov ax,3       ; Р¤СѓРЅРєС†РёСЏ 3: РїРѕР»СѓС‡РёС‚СЊ РїРѕР·РёС†РёСЋ Рё СЃС‚Р°С‚СѓСЃ РєРЅРѕРїРѕРє
-    int 33h         ; CX = X, DX = Y, BX = СЃРѕСЃС‚РѕСЏРЅРёРµ РєРЅРѕРїРѕРє
+    mov ax,3       ; Функция получения позиции и кнопок
+    int 33h        ; CX = X, DX = Y, BX = кнопки
     
-    mov ax,[cursor_x] ; РЎРѕС…СЂР°РЅСЏРµРј РїСЂРµРґС‹РґСѓС‰РёРµ РєРѕРѕСЂРґРёРЅР°С‚С‹
-    mov [prev_x],ax
-    mov ax,[cursor_y]
-    mov [prev_y],ax
+	mov ax, [cursor_x]
+    mov [prev_x], ax
+    mov ax, [cursor_y]
+    mov [prev_y], ax
     
-    mov [cursor_x],cx
+    mov [cursor_x],cx  ; Новые координаты
     mov [cursor_y],dx
     
     ret
 endp
 
 proc click_handle uses si
-	mov bx,clickables_matrix
-	add bx,[active_form_index]
-	mov ax,[bx]
-	xchg ax,bx
-	
-	movzx cx,byte[bx]
-	inc bx
-	_loop
-		mov si,[bx]
-		mov ax,[si]
-		_if [cursor_x] < ax jmp .skip
-		mov si,[bx+4]
-		add ax,[si]
-		_if [cursor_x] > ax jmp .skip
-		mov si,[bx+2]
-		mov ax,[si]
-		_if [cursor_y] < ax jmp .skip
-		mov si,[bx+6]
-		add ax,[si]
-		_if [cursor_y] > ax jmp .skip
-		
-		mov si,[bx+8]
-		stdcall word[si]
-		_break
-		
-		.skip:
-		add bx,10
-	_end
-	ret
+    mov bx,clickables_matrix
+    add bx,[active_form_index]
+    mov ax,[bx]
+    xchg ax,bx
+    
+    movzx cx,byte[bx]  ; Количество кликабельных элементов
+    inc bx
+    _loop
+        mov si,[bx]        ; X координата
+        mov ax,[si]
+        _if [cursor_x] < ax jmp .skip
+        mov si,[bx+4]      ; Ширина
+        add ax,[si]
+        _if [cursor_x] > ax jmp .skip
+        mov si,[bx+2]      ; Y координата
+        mov ax,[si]
+        _if [cursor_y] < ax jmp .skip
+        mov si,[bx+6]      ; Высота
+        add ax,[si]
+        _if [cursor_y] > ax jmp .skip
+        
+        mov si,[bx+8]      ; Вызов обработчика клика
+        stdcall word[si]
+        _break
+        
+        .skip:
+        add bx,10
+    _end
+    ret
 endp
 
 proc mouse_handle
     stdcall get_mouse_state
     
-    ; РџСЂРѕРІРµСЂСЏРµРј, РёР·РјРµРЅРёР»РѕСЃСЊ Р»Рё СЃРѕСЃС‚РѕСЏРЅРёРµ РєРЅРѕРїРѕРє
-    test bl, 0FFh         ; РџСЂРѕРІРµСЂСЏРµРј, РЅР°Р¶Р°С‚Р° Р»Рё РєР°РєР°СЏ-Р»РёР±Рѕ РєРЅРѕРїРєР°
-    jz .buttons_released  ; Р•СЃР»Рё РЅРµС‚ (BL=0), РїРµСЂРµС…РѕРґРёРј Рє РѕР±СЂР°Р±РѕС‚РєРµ РѕС‚РїСѓСЃРєР°РЅРёСЏ
-    
-    ; Р•СЃР»Рё РєР°РєР°СЏ-С‚Рѕ РєРЅРѕРїРєР° РЅР°Р¶Р°С‚Р°:
-    cmp [prev_button],NONE   ; РџСЂРѕРІРµСЂСЏРµРј, Р±С‹Р»Р° Р»Рё РєРЅРѕРїРєР° РѕС‚РїСѓС‰РµРЅР° СЂР°РЅРµРµ
-    jne .skip_click       ; Р•СЃР»Рё РєРЅРѕРїРєР° СѓР¶Рµ Р±С‹Р»Р° РЅР°Р¶Р°С‚Р°, РїСЂРѕРїСѓСЃРєР°РµРј РѕР±СЂР°Р±РѕС‚РєСѓ
-    
-    ; Р•СЃР»Рё РєРЅРѕРїРєР° С‚РѕР»СЊРєРѕ С‡С‚Рѕ РЅР°Р¶Р°С‚Р° (РїРµСЂРµС…РѕРґ РёР· 0 РІ РЅРµРЅСѓР»РµРІРѕРµ Р·РЅР°С‡РµРЅРёРµ):
-    mov [mouse_button], bl
-    stdcall click_handle  ; РћР±СЂР°Р±Р°С‚С‹РІР°РµРј РєР»РёРє
-    jmp .skip_click
-    
-.buttons_released:
-    ; РљРЅРѕРїРєРё РѕС‚РїСѓС‰РµРЅС‹ - СЃР±СЂР°СЃС‹РІР°РµРј РїСЂРµРґС‹РґСѓС‰РµРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
-    mov [prev_button],NONE
-    
-.skip_click:
-    ; РЎРѕС…СЂР°РЅСЏРµРј С‚РµРєСѓС‰РµРµ СЃРѕСЃС‚РѕСЏРЅРёРµ РєРЅРѕРїРѕРє РґР»СЏ СЃР»РµРґСѓСЋС‰РµРіРѕ РІС‹Р·РѕРІР°
-    mov [prev_button], bl
-    
-    ; РћР±СЂР°Р±РѕС‚РєР° РїРµСЂРµРјРµС‰РµРЅРёСЏ РјС‹С€Рё
+    ; Обрабатываем изменение позиции
     mov ax, [cursor_x]
     cmp ax, [prev_x]
     jne .position_changed
-	
+    
     mov ax, [cursor_y]
     cmp ax, [prev_y]
     jne .position_changed
-	
-    jmp .end_proc
+    
+    jmp .check_click
     
 .position_changed:
-    cmp [cursor_visible], CURSOR_VISIBLE
-    jne .no_restore
+    ; Восстанавливаем фон по старым координатам
     stdcall restore_cursor_background, [prev_x], [prev_y]
-.no_restore:
+    
+    ; Обновляем предыдущие координаты перед сохранением нового фона
+    mov ax, [cursor_x]
+    mov [prev_x], ax
+    mov ax, [cursor_y]
+    mov [prev_y], ax
+    
+    ; Сохраняем новый фон и рисуем курсор
     stdcall save_cursor_background, [cursor_x], [cursor_y]
     stdcall draw_cursor, [cursor_x], [cursor_y]
-    mov [cursor_visible], CURSOR_VISIBLE
     
-.end_proc:
+.check_click:
+    ; Проверяем кнопки мыши
+    test bl, 0FFh
+    jz .update_prev_button
+    
+    ; Обработка нажатия кнопки (только при новом нажатии)
+    cmp [prev_button], NONE   
+    jne .update_prev_button
+    
+    ; Сохраняем кнопку и обрабатываем клик
+    mov [mouse_button], bl
+    stdcall click_handle
+    
+.update_prev_button:
+    ; Обновляем состояние предыдущей кнопки
+    mov [prev_button], bl
+    
     ret
 endp
 
-; РЎРєСЂС‹С‚РёРµ РєСѓСЂСЃРѕСЂР°
+; Скрытие курсора
 proc hide_cursor
-    ; Р•СЃР»Рё РєСѓСЂСЃРѕСЂ СѓР¶Рµ СЃРєСЂС‹С‚, РЅРёС‡РµРіРѕ РЅРµ РґРµР»Р°РµРј
     cmp [cursor_visible],CURSOR_N_VISIBLE
     je .already_hidden
     
-    ; Р’РѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„РѕРЅ РїРѕРґ РєСѓСЂСЃРѕСЂРѕРј
-    stdcall restore_cursor_background, [cursor_x],[cursor_y]
-    
-    ; РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„Р»Р°Рі СЃРєСЂС‹С‚РёСЏ
+    stdcall restore_cursor_background, [cursor_x],[cursor_y]  ; Восстановление фона
     mov [cursor_visible],CURSOR_N_VISIBLE
     
 .already_hidden:
     ret
 endp
 
-; РџРѕРєР°Р· РєСѓСЂСЃРѕСЂР°
+; Показ курсора
 proc show_cursor
-    ; Р•СЃР»Рё РєСѓСЂСЃРѕСЂ СѓР¶Рµ РІРёРґРёРј, РЅРёС‡РµРіРѕ РЅРµ РґРµР»Р°РµРј
     cmp [cursor_visible],CURSOR_VISIBLE
     je .already_visible
     
-    ; РЎРѕС…СЂР°РЅСЏРµРј С„РѕРЅ Рё РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј РєСѓСЂСЃРѕСЂ
-    stdcall save_cursor_background, [cursor_x],[cursor_y]
-    stdcall draw_cursor, [cursor_x],[cursor_y]
-    
-    ; РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„Р»Р°Рі РІРёРґРёРјРѕСЃС‚Рё
+    stdcall save_cursor_background, [cursor_x],[cursor_y]  ; Сохранение фона
+    stdcall draw_cursor, [cursor_x],[cursor_y]             ; Отрисовка курсора
     mov [cursor_visible],CURSOR_VISIBLE
     
 .already_visible:

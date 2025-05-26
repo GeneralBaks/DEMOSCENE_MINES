@@ -1,43 +1,19 @@
-proc get_time
+proc is_time_changed
 
 	mov ah,2Ch
 	int 21h
-	
-	movzx ax,dh
-	movzx dx,cl
-	imul dx,59
-	add ax,dx
-	
-	ret
-endp
 
-proc get_cur_time 
-	
-	stdcall get_time
-	mov dx,[cur_time]
-	mov [prev_time],dx
-	sub ax,[start_time]
-	mov [cur_time],ax
-	
-	ret
-endp
-
-proc get_start_time 
-
-	stdcall get_time
-	mov [start_time],ax
-	mov [prev_time],0
-	mov [cur_time],0
+	_if byte[sys_sec_time] ~= dh
+		mov byte[sys_sec_time],dh
+	_end
+	setne ah
 	
 	ret
 endp
 
 proc draw_cur_time \
 	string, label
-	stdcall word_to_str_time, [cur_time],[string]
-	mov bx,[label]
-	mov ax,[string]
-	mov [bx+12],ax		
+	stdcall word_to_str_time, [game_time],[string]
 	stdcall draw_label, [label]
 	ret
 endp
@@ -45,8 +21,9 @@ endp
 proc update_timer \
 	label
 	
-	stdcall get_cur_time
-	_if ax ~= [prev_time]
+	stdcall is_time_changed
+	_if ah == 1
+		inc word[game_time]
 		stdcall draw_cur_time, str_timer,[label]
 	_end
 	
@@ -56,7 +33,7 @@ endp
 proc reset_timer
 
 	mov byte[game_state],GAME_WAIT
-	stdcall get_start_time
+	mov word[game_time],0
 	
 	mov bx,str_timer
 	mov byte[bx],'0'

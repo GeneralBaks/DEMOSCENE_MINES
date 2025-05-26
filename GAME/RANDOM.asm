@@ -1,5 +1,5 @@
-proc random_initialize
-     mov        ah, $2C
+proc init_random
+     mov        ah, 2Ch
      int        21h
      mov        [rand_prev], dx
      ret
@@ -10,6 +10,7 @@ proc random_get\
 
      mov        ax, [rand_prev]
      rol        ax, 7
+	 xor        ax, 0A7h
      adc        ax, 23
      mov        [rand_prev], ax
 

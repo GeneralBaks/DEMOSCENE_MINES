@@ -1,7 +1,7 @@
 ; ========== SYNTAX OVERVIEW ==========
-; ÐŸÐ¾Ð´Ð´ÐµÑ€Ð¶ÐºÐ° Ñ†Ð¸ÐºÐ»Ð¾Ð² (_cycle, _for, _while, _repeat), ÑƒÑÐ»Ð¾Ð²Ð¸Ð¹ (_if, _elseif, _else), switch/case
-; Ð’ÑÐµ ÐºÐ¾Ð½ÑÑ‚Ñ€ÑƒÐºÑ†Ð¸Ð¸ Ð·Ð°Ð²ÐµÑ€ÑˆÐ°ÑŽÑ‚ÑÑ _end Ð¸Ð»Ð¸ ÑÐ¿ÐµÑ†. Ð¼Ð°ÐºÑ€Ð¾ÑÐ°Ð¼Ð¸ (_endfor, _endif Ð¸ Ñ‚.Ð¿.)
-; ÐŸÐ¾Ð´Ð´ÐµÑ€Ð¶ÐºÐ° _break Ð´Ð»Ñ Ð²Ñ‹Ñ…Ð¾Ð´Ð° Ð¸Ð· Ð»ÑŽÐ±Ð¾Ð³Ð¾(Ð¿Ð¾Ñ‡Ñ‚Ð¸) Ñ†Ð¸ÐºÐ»Ð°
+; Ïîääåðæêà öèêëîâ (_cycle, _for, _while, _repeat), óñëîâèé (_if, _elseif, _else), switch/case
+; Âñå êîíñòðóêöèè çàâåðøàþòñÿ _end èëè ñïåö. ìàêðîñàìè (_endfor, _endif è ò.ï.)
+; Ïîääåðæêà _break äëÿ âûõîäà èç ëþáîãî(ïî÷òè) öèêëà
 ;=========SYNTAX=============
 ;_cycle number 
 ;... 
@@ -47,19 +47,19 @@
 ; transform to instructions
 ; cmp a,b j(cond) lable
 
-loop_depth = 0 ; Ð²Ð»Ð¾Ð¶ÐµÐ½Ð¾ÑÑ‚ÑŒ _cycle
+loop_depth = 0 ; âëîæåíîñòü _cycle
 
 ; ========== BASIC CYCLE MACRO ==========
-; Ð ÐµÐ°Ð»Ð¸Ð·ÑƒÐµÑ‚ loop
-; Ð˜ÑÐ¿Ð¾Ð»ÑŒÐ·ÑƒÐµÑ‚ Ñ€ÐµÐ³Ð¸ÑÑ‚Ñ€ CX ÐºÐ°Ðº ÑÑ‡ÐµÑ‚Ñ‡Ð¸Ðº
+; Ðåàëèçóåò loop
+; Èñïîëüçóåò ðåãèñòð CX êàê ñ÷åò÷èê
 macro _loop iter {
 	local ..end
-	lst_loop_end equ ..end ; Ð”Ð»Ñ _break
+	lst_loop_end equ ..end ; Äëÿ _break
 	
-	loop_depth = loop_depth + 1 ; Ð£Ð²ÐµÐ»Ð¸Ñ‡Ð¸Ð²Ð°ÐµÐ¼ ÑÑ‡ÐµÑ‚Ñ‡Ð¸Ðº Ð²Ð»Ð¾Ð¶ÐµÐ½Ð½Ð¾ÑÑ‚Ð¸
+	loop_depth = loop_depth + 1 ; Óâåëè÷èâàåì ñ÷åò÷èê âëîæåííîñòè
 	
 	if loop_depth > 1
-		push cx ; Ð¡Ð¾Ñ…Ñ€Ð°Ð½ÑÐµÐ¼ cx Ð¿Ñ€Ð¸ Ð²Ð»Ð¾Ð¶ÐµÐ½Ð½Ð¾ÑÑ‚Ð¸
+		push cx ; Ñîõðàíÿåì cx ïðè âëîæåííîñòè
 	end if 
 	
 	if ~ iter eq
@@ -67,36 +67,36 @@ macro _loop iter {
 	end if
 	
 	local .loop
-	curloop equ .loop ; Ð”Ð»Ñ ÐºÐ¾Ð¼Ð°Ð½Ð´Ñ‹ loop
+	curloop equ .loop ; Äëÿ êîìàíäû loop
 	
-	curloop: ; ÐÐ°Ñ‡Ð°Ð»Ð¾ Ñ†Ð¸ÐºÐ»Ð°
+	curloop: ; Íà÷àëî öèêëà
 	
-	_end_ equ _loop_ ; Ð”Ð»Ñ ÑƒÐ½Ð¸Ð²ÐµÑ€ÑÐ°Ð»ÑŒÐ½Ð¾Ð³Ð¾ _end
+	_end_ equ _loop_ ; Äëÿ óíèâåðñàëüíîãî _end
 }
 
 macro _endloop {
-	loop curloop ; ÐŸÐ¾Ð²Ñ‚Ð¾Ñ€ Ñ†Ð¸ÐºÐ»Ð°
+	loop curloop ; Ïîâòîð öèêëà
 	
-	if loop_depth > 1 ; Ð’Ð¾ÑÑÑ‚Ð°Ð½Ð°Ð²Ð»Ð¸Ð²Ð°ÐµÐ¼ CX ÐµÑÐ»Ð¸ Ð±Ñ‹Ð» ÑÐ¾Ñ…Ñ€Ð°Ð½ÐµÐ½
+	if loop_depth > 1 ; Âîññòàíàâëèâàåì CX åñëè áûë ñîõðàíåí
 		pop cx
 	end if
 	
-	loop_depth = loop_depth - 1 ; Ð£Ð¼ÐµÐ½ÑŒÑˆÐ°ÐµÐ¼ Ð²Ð»Ð¾Ð¶ÐµÐ½Ð½Ð¾ÑÑ‚ÑŒ
+	loop_depth = loop_depth - 1 ; Óìåíüøàåì âëîæåííîñòü
 	 
-	lst_loop_end: ; ÐœÐµÑ‚ÐºÐ° Ð²Ñ‹Ñ…Ð¾Ð´Ð°
+	lst_loop_end: ; Ìåòêà âûõîäà
 	
-	; ÐžÑ‡Ð¸Ñ‰Ð°ÐµÐ¼ Ð²Ñ€ÐµÐ¼ÐµÐ½Ð½Ñ‹Ðµ Ð¼ÐµÑ‚ÐºÐ¸
+	; Î÷èùàåì âðåìåííûå ìåòêè
 	restore lst_loop_end
 	restore curloop
 	restore _end_
 }
 
 ; ========= FOR =============
-; Ð¢Ð¾Ð»ÑŒÐºÐ¾ Ð¡ ÑÑ‚Ð¸Ð»ÑŒ
+; Òîëüêî Ñ ñòèëü
 macro _for param* {
 	local ..begpos, ..endpos
-	beg equ ..begpos ; ÐœÐµÑ‚ÐºÐ° Ð½Ð°Ñ‡Ð°Ð»Ð° Ñ†Ð¸ÐºÐ»Ð°
-	lst_loop_end equ ..endpos ; ÐœÐµÑ‚ÐºÐ° Ð²Ñ‹Ñ…Ð¾Ð´Ð°
+	beg equ ..begpos ; Ìåòêà íà÷àëà öèêëà
+	lst_loop_end equ ..endpos ; Ìåòêà âûõîäà
 	
 	define definstr 0
 	define defvar 0
@@ -136,7 +136,7 @@ macro _for param* {
 		\\}
 	\}
 
-	_end_ equ _for_ ; Ð”Ð»Ñ ÑƒÐ½Ð¸Ð²ÐµÑ€ÑÐ°Ð»ÑŒÐ½Ð¾Ð³Ð¾ _end
+	_end_ equ _for_ ; Äëÿ óíèâåðñàëüíîãî _end
 }
 
 macro _endfor {
@@ -158,8 +158,8 @@ macro _endfor {
 		restore for_num
 	\}
 	
-	jmp beg			; Ð¡Ð»ÐµÐ´ÑƒÑŽÑ‰Ð°Ñ Ð¸Ñ‚ÐµÑ€Ð°Ñ†Ð¸Ñ
-	lst_loop_end:   ; Ð’Ñ‹Ñ…Ð¾Ð´
+	jmp beg			; Ñëåäóþùàÿ èòåðàöèÿ
+	lst_loop_end:   ; Âûõîä
 	
 	restore for_var
 	restore beg
@@ -177,9 +177,9 @@ macro _print [string] {
 }
 
 ; ========== COMPARE GENERATORS ==========
-; ÐŸÑ€Ð¾ÑÑ‚Ð°Ñ Ð³ÐµÐ½ÐµÑ€Ð°Ñ†Ð¸Ñ ÑÑ€Ð°Ð²Ð½ÐµÐ½Ð¸Ñ Ð¸ Ð¿ÐµÑ€ÐµÑ…Ð¾Ð´Ð°
-; Ð ÐµÐ°Ð»Ð¸Ð·Ð°Ñ†Ð¸Ñ ÑÑ€Ð°Ð²Ð½ÐµÐ½Ð¸Ð¹: ==, ~=, >=, <=, >, <
-; Ñ Ð³ÐµÐ½ÐµÑ€Ð°Ñ†Ð¸ÐµÐ¹ ÑÐ¾Ð¾Ñ‚Ð²ÐµÑ‚ÑÑ‚Ð²ÑƒÑŽÑ‰Ð¸Ñ… jmp-Ð¸Ð½ÑÑ‚Ñ€ÑƒÐºÑ†Ð¸Ð¹
+; Ïðîñòàÿ ãåíåðàöèÿ ñðàâíåíèÿ è ïåðåõîäà
+; Ðåàëèçàöèÿ ñðàâíåíèé: ==, ~=, >=, <=, >, <
+; ñ ãåíåðàöèåé ñîîòâåòñòâóþùèõ jmp-èíñòðóêöèé
 macro gen_cmp_jmp param,lbl {
 	local def
 	define def 0
@@ -231,7 +231,7 @@ macro gen_cmp_jmp param,lbl {
 	\}
 }
 
-; Ð˜Ð½Ð²ÐµÑ€Ñ‚Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð½Ð°Ñ Ð²ÐµÑ€ÑÐ¸Ñ (Ð´Ð»Ñ if Ð¸ ÑƒÑÐ»Ð¾Ð²Ð¸Ð¹ Ð² Ñ†Ð¸ÐºÐ»Ðµ)
+; Èíâåðòèðîâàííàÿ âåðñèÿ (äëÿ if è óñëîâèé â öèêëå)
 macro gen_cmp_jmp_rev param,lbl {
 	local def
 	define def 0
@@ -284,43 +284,43 @@ macro gen_cmp_jmp_rev param,lbl {
 }
 
 ; ========== IF / ELSE / ELSEIF ==========
-; ÐŸÑ€Ð¾ÑÑ‚Ð°Ñ Ð¿Ð¾Ð´Ð´ÐµÑ€Ð¶ÐºÐ° if/elseif/else
+; Ïðîñòàÿ ïîääåðæêà if/elseif/else
 macro _if param* {
 	local ..end, ..if_local, isdef
 	
-	if_fin equ ..end	 ; ÐœÐµÑ‚ÐºÐ° ÐºÐ¾Ð½Ñ†Ð° Ð±Ð»Ð¾ÐºÐ°
-	curif equ ..if_local ; Ð¢ÐµÐºÑƒÑ‰Ð°Ñ Ð¼ÐµÑ‚ÐºÐ°
+	if_fin equ ..end	 ; Ìåòêà êîíöà áëîêà
+	curif equ ..if_local ; Òåêóùàÿ ìåòêà
 	 
 	define has_else 0
 	define isdef 0
-	; Ð¤Ð¾Ñ€Ð¼Ð° Ñ Ð¿ÐµÑ€ÐµÑ…Ð¾Ð´Ð¾Ð¼: _if cond jmp label
+	; Ôîðìà ñ ïåðåõîäîì: _if cond jmp label
 	match =0 cond =jmp lbl, isdef param \{
 		gen_cmp_jmp cond,lbl
 		
 		define isdef 1
 	\}
 	
-	; ÐžÐ±Ñ‹Ñ‡Ð½Ð°Ñ Ñ„Ð¾Ñ€Ð¼Ð° if
+	; Îáû÷íàÿ ôîðìà if
 	match =0 cond, isdef param \{
-		gen_cmp_jmp_rev cond,curif ; Ð˜Ð½Ð²ÐµÑ€Ñ‚Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð½Ð¾Ðµ ÑƒÑÐ»Ð¾Ð²Ð¸Ðµ
+		gen_cmp_jmp_rev cond,curif ; Èíâåðòèðîâàííîå óñëîâèå
 		_end_ equ _if_
 		
 		define isdef 1
 	\}
 }
 
-; Ð‘Ð»Ð¾Ðº else
+; Áëîê else
 macro _else {
-	jmp if_fin ; ÐŸÑ€Ð¾Ð¿ÑƒÑÐºÐ°ÐµÐ¼ Ð±Ð»Ð¾Ðº else
-	curif:	   ; ÐŸÑ€Ð¾Ð´Ð¾Ð»Ð¶ÐµÐ½Ð¸Ðµ if
+	jmp if_fin ; Ïðîïóñêàåì áëîê else
+	curif:	   ; Ïðîäîëæåíèå if
 	restore curif
 	
 	define has_else 1
 }
 
-; Ð‘Ð»Ð¾Ðº elseif
+; Áëîê elseif
 macro _elseif param* {
-	jmp if_fin ; ÐŸÑ€Ð¾Ð¿ÑƒÑÐºÐ°ÐµÐ¼ ÑÐ»ÐµÐ´ÑƒÑŽÑ‰Ð¸Ð¹ Ð±Ð»Ð¾Ðº
+	jmp if_fin ; Ïðîïóñêàåì ñëåäóþùèé áëîê
 	
 	curif:
 	restore curif
@@ -329,11 +329,11 @@ macro _elseif param* {
 	curif equ ..if_local
 	
 	match cond ,param \{
-		gen_cmp_jmp_rev cond,curif ; ÐŸÑ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð½Ð¾Ð²Ð¾Ð³Ð¾ ÑƒÑÐ»Ð¾Ð²Ð¸Ñ
+		gen_cmp_jmp_rev cond,curif ; Ïðîâåðêà íîâîãî óñëîâèÿ
 	\}
 }
 
-; ÐšÐ¾Ð½ÐµÑ† ÑƒÑÐ»Ð¾Ð²Ð½Ð¾Ð³Ð¾ Ð±Ð»Ð¾ÐºÐ°
+; Êîíåö óñëîâíîãî áëîêà
 macro _endif {
 	match =0, has_else \{
 		curif:
@@ -417,7 +417,22 @@ macro _case val* {
 	jne case_lbl
 }
 
-macro _endswitch {
+macro _standart {
+	match =1 , sw_depth \{
+		jmp sw_end
+	\}
+	
+	define sw_depth 1
+	
+	case_lbl:
+	restore case_lbl
+	
+	local ..curcase
+	case_lbl equ ..curcase
+	
+}
+
+macro _endswitch {	
 	case_lbl:
 	sw_end:	
 	
@@ -426,6 +441,7 @@ macro _endswitch {
 	restore sw_end
 	restore _end_
 }
+
 
 ; ========== GENERIC END ==========
 macro _end {
@@ -454,10 +470,10 @@ macro _end {
 }
 
 ; ========== BREAK ==========
-macro _break { jmp lst_loop_end }  ; Ð’Ñ‹Ñ…Ð¾Ð´ Ð¸Ð· Ñ†Ð¸ÐºÐ»Ð°
+macro _break { jmp lst_loop_end }  ; Âûõîä èç öèêëà
 
 ; ========== UTILS ==========
-struc pasc_str data{
+struc PascalString data{
 	local .length
 	. db .length, data
 	.length = $ - . - 1
@@ -520,10 +536,10 @@ struc array len {
 }
 
 
-;ÐšÐ¾ÑÑ‚Ñ‹Ð»ÑŒ Ð´Ð»Ñ Ð¿Ð¾Ð´ÑÑ‡Ñ‘Ñ‚Ð° Ð²Ð½ÑƒÑ‚Ñ€ÐµÐ½Ð½ÐµÐ³Ð¾ X Ð¸ Y
-;Ð´Ð¾ Ð¾Ð¿Ñ€ÐµÐ´ÐµÐ»ÐµÐ½Ð¸Ñ Ñ„Ð¾Ñ€Ð¼Ñ‹
-; Ð Ð°ÑÑÑ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÑ‚ Ð²Ð½ÑƒÑ‚Ñ€ÐµÐ½Ð½Ð¸Ðµ ÐºÐ¾Ð¾Ñ€Ð´Ð¸Ð½Ð°Ñ‚Ñ‹ ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð²
-; Ð½Ð° Ð¾ÑÐ½Ð¾Ð²Ðµ Ð²Ð½ÐµÑˆÐ½Ð¸Ñ… ÐºÐ¾Ð¾Ñ€Ð´Ð¸Ð½Ð°Ñ‚ Ð¸ Ñ‚Ð¾Ð»Ñ‰Ð¸Ð½Ñ‹ Ñ€Ð°Ð¼ÐºÐ¸
+;Êîñòûëü äëÿ ïîäñ÷¸òà âíóòðåííåãî X è Y
+;äî îïðåäåëåíèÿ ôîðìû
+; Ðàññ÷èòûâàåò âíóòðåííèå êîîðäèíàòû ýëåìåíòîâ
+; íà îñíîâå âíåøíèõ êîîðäèíàò è òîëùèíû ðàìêè
 macro _generate_cord param {
 	match  _x : _y : border_w ,param \{
 		x = _x
@@ -545,4 +561,18 @@ macro _calc_offset x,y,reg {
 	end if
 	imul reg,y,SCR_W
 	add reg,x
+}
+
+macro _calc_mtrx_offset col0,row0,cols {
+	movzx ax,row0
+	imul ax,cols
+	add ax,col0
+}
+
+macro _calc_mtrx_offset col0,row0,cols {
+	mov ax,row0
+	mov dx,cols
+	imul ax,dx
+	mov dx,col0
+	add ax,dx
 }

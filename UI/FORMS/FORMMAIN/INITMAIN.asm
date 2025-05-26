@@ -40,14 +40,14 @@ fm_main FormMain \
 	x, y, SCR_W, SCR_H, CL_GREY_0, \
 	bw, 35h, auto_draw_form, \
 	<pn_up_x, pn_up_y, 308, 29, CL_GREY_1, FRM_REV, auto_draw_panel, \
-	<lb_m_x, lb_m_y, 16, 11, CL_BLACK, FRM_REV, str_mines_amount, CL_RED_1, draw_label>, \
+	<lb_m_x, lb_m_y, 16, 11, CL_BLACK, FRM_REV, str_mines_num, CL_RED_1, draw_label>, \
 	<lb_t_x, lb_t_y, 23, 11, CL_BLACK, FRM_REV, str_timer, CL_BLUE_1, draw_label>, \
-	<bt_ex_x, bt_ex_y, 51, STD_LBL_HT, CL_GREY_1, FRM_STD, str_exit, CL_BLACK, BTN_NORM, auto_draw_button, fm_main_exit_button_click>, \
-	<bt_op_x,bt_op_y, 51, STD_LBL_HT, CL_GREY_1, FRM_STD, str_options, CL_BLACK, BTN_NORM, auto_draw_button, fm_main_options_button_click>, \
-	<NONE, NONE, 56, STD_LBL_HT, CL_GREY_1, FRM_STD, str_reset, CL_BLACK, BTN_NORM, auto_draw_button, fm_main_reset_button_click>>, \
+	<bt_ex_x, bt_ex_y, 51, STD_LBL_HT, CL_GREY_1, FRM_STD, str_exit, CL_BLACK, BTN_NORM, draw_button, fm_main_exit_button_click>, \
+	<bt_op_x,bt_op_y, 51, STD_LBL_HT, CL_GREY_1, FRM_STD, str_options, CL_BLACK, BTN_NORM, draw_button, fm_main_options_button_click>, \
+	<NONE, NONE, 58, STD_LBL_HT, CL_GREY_1, FRM_STD, str_reset, CL_BLACK, BTN_NORM, draw_button, fm_main_reset_button_click>>, \
 	<pn_fl_x, pn_fl_y, 308, 157, CL_GREY_1, FRM_REV, auto_draw_panel, \
 	<gr_fl_x, gr_fl_y, 308, 157, CL_GREY_0, FRM_REV, MAX_COLS, MAX_ROWS, NONE, \
-	auto_resize, draw_grid, auto_draw_cell,auto_fill_grid, fm_main_grid_button_click>, auto_centralize>
+	change_cell_size, draw_grid, open_cells, fill_grid, update_grid_dimensions, fm_main_grid_button_click>, centralize_grid_cord>
 	
 fm_main_clickables:
 	db 4

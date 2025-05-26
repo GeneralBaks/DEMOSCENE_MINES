@@ -1,9 +1,13 @@
 field_matrix: 
-	.cols dw MAX_COLS
-	.rows dw MAX_ROWS
+	.cols db MAX_COLS
+	.rows db MAX_ROWS
+	.mines_total db MAX_MINES
     .size dw MAX_COLS * MAX_ROWS
 	.elements db MAX_COLS * MAX_ROWS dup(0)
-
-mines_amount dw ?
+	.clear dw clear_matrix
+	
+mines_left db MAX_MINES
+save_cells_left dw MAX_COLS * MAX_ROWS - MAX_MINES
 
 game_state db GAME_WAIT
+rand_prev dw ?

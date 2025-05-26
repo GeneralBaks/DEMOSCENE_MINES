@@ -4,9 +4,8 @@ proc keyboard_handle
 	int 21h
 	
 	_if al == 27 
-		mov ax,COMPLETE
-	_else
-		mov ax,NOT_COMPLETE
+		mov al,GAME_EXIT
+		mov [game_state],al
 	_end
 	ret
 endp

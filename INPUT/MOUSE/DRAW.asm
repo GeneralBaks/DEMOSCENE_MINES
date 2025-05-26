@@ -1,18 +1,18 @@
-; РЎРѕС…СЂР°РЅРµРЅРёРµ С„РѕРЅР° РїРѕРґ РєСѓСЂСЃРѕСЂРѕРј
+; Сохранение фона под курсором
 proc save_cursor_background uses si di, \
     x, y
-    mov di,arr_cursor_back ; РЈРєР°Р·Р°С‚РµР»СЊ РЅР° Р±СѓС„РµСЂ РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ С„РѕРЅР°
-	imul si,[y],SCR_W	; Р’С‹С‡РёСЃР»СЏРµРј РЅР°С‡Р°Р»СЊРЅРѕРµ СЃРјРµС‰РµРЅРёРµ 
+    mov di,arr_cursor_back ; Указатель на буфер для сохранения фона
+	imul si,[y],SCR_W	; Вычисляем начальное смещение 
     add si,[x]
     push es ds ds es
 	pop ds es
-	_loop CURSOR_SIZE ; РЎРѕС…СЂР°РЅСЏРµРј РѕР±Р»Р°СЃС‚СЊ CURSOR_SIZE x CURSOR_SIZE
+	_loop CURSOR_SIZE ; Сохраняем область CURSOR_SIZE x CURSOR_SIZE
 		push cx di si
 		mov cx,CURSOR_SIZE
 		rep movsb       
 		pop si di cx
     
-		add si,SCR_W ; РџРµСЂРµС…РѕРґРёРј Рє СЃР»РµРґСѓСЋС‰РµР№ СЃС‚СЂРѕРєРµ
+		add si,SCR_W ; Переходим к следующей строке
 		add di,CURSOR_SIZE
     _end
 	pop ds es
@@ -20,20 +20,20 @@ proc save_cursor_background uses si di, \
     ret
 endp
 
-; Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ С„РѕРЅР° РїРѕРґ РєСѓСЂСЃРѕСЂРѕРј
+; Восстановление фона под курсором
 proc restore_cursor_background uses si di, \
     x, y 
-    mov si,arr_cursor_back ; РЈРєР°Р·Р°С‚РµР»СЊ РЅР° Р±СѓС„РµСЂ СЃ СЃРѕС…СЂР°РЅРµРЅРЅС‹Рј С„РѕРЅРѕРј
-    imul di,[y],SCR_W ; Р’С‹С‡РёСЃР»СЏРµРј РЅР°С‡Р°Р»СЊРЅРѕРµ СЃРјРµС‰РµРЅРёРµ
+    mov si,arr_cursor_back ; Указатель на буфер с сохраненным фоном
+    imul di,[y],SCR_W ; Вычисляем начальное смещение
     add di,[x]
     
-	_loop CURSOR_SIZE ; Р’РѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј РѕР±Р»Р°СЃС‚СЊ CURSOR_SIZE x CURSOR_SIZE
+	_loop CURSOR_SIZE ; Восстанавливаем область CURSOR_SIZE x CURSOR_SIZE
 		push cx di si
 		mov cx,CURSOR_SIZE
-		rep movsb       ; РљРѕРїРёСЂСѓРµРј СЃС‚СЂРѕРєСѓ РёР· DS:SI РІ ES:DI
+		rep movsb       ; Копируем строку из DS:SI в ES:DI
 		pop si di cx
 		
-		add di,SCR_W ; РџРµСЂРµС…РѕРґРёРј Рє СЃР»РµРґСѓСЋС‰РµР№ СЃС‚СЂРѕРєРµ
+		add di,SCR_W ; Переходим к следующей строке
 		add si,CURSOR_SIZE
     _end
     
@@ -64,14 +64,14 @@ proc draw_cursor \
     _end
     
     mov si,cursor_dump
-    imul di,[y],SCR_W  ; Р’С‹С‡РёСЃР»СЏРµРј РЅР°С‡Р°Р»СЊРЅРѕРµ СЃРјРµС‰РµРЅРёРµ
+    imul di,[y],SCR_W  ; Вычисляем начальное смещение
     add di,[x]
     
-    mov bx,0           ; РЎС‡РµС‚С‡РёРє СЃС‚СЂРѕРє РєСѓСЂСЃРѕСЂР°
+    mov bx,0           ; Счетчик строк курсора
     _loop
         push cx
         
-        ; Р’С‹С‡РёСЃР»СЏРµРј С€РёСЂРёРЅСѓ С‚РµРєСѓС‰РµР№ СЃС‚СЂРѕРєРё РєСѓСЂСЃРѕСЂР° (С‚СЂРµСѓРіРѕР»СЊРЅР°СЏ С„РѕСЂРјР°)
+        ; Вычисляем ширину текущей строки курсора (треугольная форма)
         mov cx,CURSOR_SIZE
 		push bx dx
 		_if dx < bx
@@ -79,15 +79,13 @@ proc draw_cursor \
 		_end
 		sub cx,dx
 		
-        jle .skip_row   ; Р•СЃР»Рё С€РёСЂРёРЅР° <= 0, РїСЂРѕРїСѓСЃРєР°РµРј СЃС‚СЂРѕРєСѓ
+        jle .skip_row   ; Если ширина <= 0, пропускаем строку
         
         push di
-        rep movsb      ; РљРѕРїРёСЂСѓРµРј СЃС‚СЂРѕРєСѓ РєСѓСЂСЃРѕСЂР°
+        rep movsb      ; Копируем строку курсора
         pop di
         
     .skip_row:
-        ; РЈРєР°Р·Р°С‚РµР»СЊ РёСЃС‚РѕС‡РЅРёРєР° РґРѕР»Р¶РµРЅ СѓРєР°Р·С‹РІР°С‚СЊ РЅР° РЅР°С‡Р°Р»Рѕ СЃР»РµРґСѓСЋС‰РµР№ СЃС‚СЂРѕРєРё РєСѓСЂСЃРѕСЂР°
-        ; РџСЂРѕРїСѓСЃРєР°РµРј РѕСЃС‚Р°РІС€РёРµСЃСЏ Р±Р°Р№С‚С‹ РІ С‚РµРєСѓС‰РµР№ СЃС‚СЂРѕРєРµ РєСѓСЂСЃРѕСЂР°
 		pop dx bx
 		push dx
 		
@@ -96,9 +94,9 @@ proc draw_cursor \
 			add si,dx
 		_end
 		pop dx
-        add di,SCR_W   ; РџРµСЂРµС…РѕРґРёРј Рє СЃР»РµРґСѓСЋС‰РµР№ СЃС‚СЂРѕРєРµ СЌРєСЂР°РЅР°
+        add di,SCR_W   ; Переходим к следующей строке экрана
         pop cx
-		inc bx         ; РЈРІРµР»РёС‡РёРІР°РµРј СЃС‡РµС‚С‡РёРє СЃС‚СЂРѕРє
+		inc bx         ; Увеличиваем счетчик строк
     _end
     
     ret

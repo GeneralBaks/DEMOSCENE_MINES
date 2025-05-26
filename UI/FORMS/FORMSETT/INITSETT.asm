@@ -26,11 +26,11 @@ bt_back_y = 10 + STD_LBL_HT + bt_custom_y
 fm_options FormOptions \
 	x, y, 90, 100, CL_GREY_0, \
 	bw, CL_GREEN_0, auto_draw_form, \
-	<bt_easy_x, bt_easy_y, 56, STD_LBL_HT, CL_GREY_1, FRM_STD, str_easy, CL_BLACK, BTN_NORM, auto_draw_button, fm_options_easy_button_click>, \
-	<bt_medium_x, bt_medium_y, 56, STD_LBL_HT, CL_GREY_1, FRM_STD, str_medium, CL_BLACK, BTN_NORM, auto_draw_button, fm_options_medium_button_click>, \
-	<bt_hard_x, bt_hard_y, 56, STD_LBL_HT, CL_GREY_1, FRM_STD, str_hard, CL_BLACK, BTN_NORM, auto_draw_button, fm_options_hard_button_click>, \
-	<bt_custom_x, bt_custom_y, 56, STD_LBL_HT, CL_GREY_1, FRM_STD, str_custom, CL_BLACK, BTN_NORM, auto_draw_button, fm_options_custom_button_click>, \
-	<bt_back_x, bt_back_y, 56, STD_LBL_HT, CL_GREY_1, FRM_STD, str_back, CL_BLACK, BTN_NORM, auto_draw_button, fm_options_back_button_click>
+	<bt_easy_x, bt_easy_y, 56, STD_LBL_HT, CL_GREY_1, FRM_STD, str_easy, CL_BLACK, BTN_NORM, draw_button, fm_options_easy_button_click>, \
+	<bt_medium_x, bt_medium_y, 56, STD_LBL_HT, CL_GREY_1, FRM_STD, str_medium, CL_BLACK, BTN_NORM, draw_button, fm_options_medium_button_click>, \
+	<bt_hard_x, bt_hard_y, 56, STD_LBL_HT, CL_GREY_1, FRM_STD, str_hard, CL_BLACK, BTN_NORM, draw_button, fm_options_hard_button_click>, \
+	<bt_custom_x, bt_custom_y, 56, STD_LBL_HT, CL_GREY_1, FRM_STD, str_custom, CL_BLACK, BTN_NORM, draw_button, fm_options_custom_button_click>, \
+	<bt_back_x, bt_back_y, 56, STD_LBL_HT, CL_GREY_1, FRM_STD, str_back, CL_BLACK, BTN_NORM, draw_button, fm_options_back_button_click>
 	
 
 fm_options_clickables:
