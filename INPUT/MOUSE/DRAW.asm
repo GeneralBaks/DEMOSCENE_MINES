@@ -2,20 +2,22 @@
 proc save_cursor_background uses si di, \
     x, y
     mov di,arr_cursor_back ; Указатель на буфер для сохранения фона
-	imul si,[y],SCR_W	; Вычисляем начальное смещение 
+    imul si,[y],SCR_W   ; Вычисляем начальное смещение 
     add si,[x]
-    push es ds ds es
-	pop ds es
-	_loop CURSOR_SIZE ; Сохраняем область CURSOR_SIZE x CURSOR_SIZE
-		push cx di si
-		mov cx,CURSOR_SIZE
-		rep movsb       
-		pop si di cx
+    push es ds ds es ; ЭЭЭЭЭ... А! Муть с регистрами
+    pop ds es ; Свапаем значения регистров ES и DS
     
-		add si,SCR_W ; Переходим к следующей строке
-		add di,CURSOR_SIZE
+    ; Сохраняем область CURSOR_SIZE x CURSOR_SIZE
+    _loop CURSOR_SIZE
+        push cx di si
+        mov cx,CURSOR_SIZE
+        rep movsb ; Копируем строку из DS:SI в ES:DI      
+        pop si di cx
+    
+        add si,SCR_W ; Переходим к следующей строке
+        add di,CURSOR_SIZE
     _end
-	pop ds es
+    pop ds es ; Восстанавливаем значение регистров ES и DS
     
     ret
 endp
@@ -27,77 +29,101 @@ proc restore_cursor_background uses si di, \
     imul di,[y],SCR_W ; Вычисляем начальное смещение
     add di,[x]
     
-	_loop CURSOR_SIZE ; Восстанавливаем область CURSOR_SIZE x CURSOR_SIZE
-		push cx di si
-		mov cx,CURSOR_SIZE
-		rep movsb       ; Копируем строку из DS:SI в ES:DI
-		pop si di cx
-		
-		add di,SCR_W ; Переходим к следующей строке
-		add si,CURSOR_SIZE
+    _loop CURSOR_SIZE ; Восстанавливаем область CURSOR_SIZE x CURSOR_SIZE
+        push cx di si
+        mov cx,CURSOR_SIZE
+        rep movsb       ; Копируем строку из DS:SI в ES:DI
+        pop si di cx
+        
+        add di,SCR_W ; Переходим к следующей строке
+        add si,CURSOR_SIZE
     _end
     
     ret
 endp
 
-proc draw_cursor \
+proc draw_cursor uses bx, \
     x, y
     
-    xor dx,dx
+    locals
+        hor_lim db 0
+        ver_lim db 0
+    endl
     
-    mov ax,[x]
-    add ax,CURSOR_SIZE
+    ; Высчитываем горизонтальную длину части курсора, которая выходит за экран
+    mov ax,CURSOR_SIZE
+    add ax,[x]
     sub ax,SCR_W
+    ; Обновляем hor_lim, если хоть часть курсора выходит за экран
+    jl @f
+        mov [hor_lim],al
+    @@:
     
-    _if ax > 0 
-        mov dx,ax
-    _end
+    ; Высчитываем вертикальную длину части курсора, которая выходит за экран
+    mov ax,CURSOR_SIZE
+    add ax,[y]
+    sub ax,SCR_H
+    ; Обновляем ver_lim, если хоть часть курсора выходит за экран
+    jl @f
+        mov [ver_lim],al 
+    @@:
+    
+    _calc_offset [x],[y],bx ; Высчитываем смещение для начальной точки отрисовки
+
+    mov cx,CURSOR_SIZE
+    sub cl,[hor_lim]
+    stdcall draw_line, bx,cx,DIR_HOR,CL_BLACK   ; Рисуем верхнию линию
     
     mov cx,CURSOR_SIZE
+    sub cl,[ver_lim]
+    stdcall draw_line, bx,cx,DIR_VER,CL_BLACK  ; Рисуем левую линий
     
-    mov ax,[y]
-    add ax,CURSOR_SIZE
-    sub ax,SCR_H
+    mov byte[es:bx],CL_GOLD  ; Отрисовываем золотой пимтик
     
-    _if ax > 0 
-        sub cx,ax
+    ; Смещаем точку отрисовки во внутренюю часть
+    inc bx
+    add bx,SCR_W    
+    
+    mov dl,CURSOR_SIZE-1    ; Заготовка длины горизонтальной белой линии
+    
+    mov cx,CURSOR_SIZE-1    ; Заготовка количества повторений
+    
+    ; Высчитываем количество повторений для горизонтальной линии
+    _if byte[ver_lim]>2     
+        sub cl,[ver_lim]
+    _else
+        sub cl,2
     _end
     
-    mov si,cursor_dump
-    imul di,[y],SCR_W  ; Вычисляем начальное смещение
-    add di,[x]
+    mov dh,2 ; DH необходимо для высчитывания уменьшения горизонтальной линии
+    inc cl   
     
-    mov bx,0           ; Счетчик строк курсора
-    _loop
-        push cx
+    ; Отрисовка внутреней части
+    _loop 
+        push cx 
         
-        ; Вычисляем ширину текущей строки курсора (треугольная форма)
-        mov cx,CURSOR_SIZE
-		push bx dx
-		_if dx < bx
-			xchg dx,bx
-		_end
-		sub cx,dx
-		
-        jle .skip_row   ; Если ширина <= 0, пропускаем строку
+        ; Высчитывае длину белой линии
+        movzx cx,dl
+        _if byte[hor_lim]>dh
+            sub cl,[hor_lim]
+        _else
+            sub cl,dh
+        _end
         
-        push di
-        rep movsb      ; Копируем строку курсора
-        pop di
+        mov di,bx                
+        mov al,CL_WHITE_0
+        rep stosb                ; Отрисовка белой линии
+
+        ; Отрисовка части чёрной диогонали, 
+        ; если горизонтальная линия не залазит за экран
+        _if dh>byte[hor_lim]
+            mov byte[es:di],CL_BLACK 
+        _end
         
-    .skip_row:
-		pop dx bx
-		push dx
-		
-		_if dx > bx
-			sub dx,bx
-			add si,dx
-		_end
-		pop dx
-        add di,SCR_W   ; Переходим к следующей строке экрана
+        add bx,SCR_W ; Смещаемся вниз
+        inc dh       ; Сокращаем длину белой линии
         pop cx
-		inc bx         ; Увеличиваем счетчик строк
     _end
-    
+
     ret
 endp

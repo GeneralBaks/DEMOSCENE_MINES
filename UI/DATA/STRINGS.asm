@@ -19,7 +19,7 @@ str_cols db "COLS",00h
 str_rows db "ROWS",00h
 str_mines db "MINES",00h
 
-str_mines_num db "99",00h
+str_mines_num db "80",00h
 str_timer db "000",00h,00h,00h
 
 str_ed_cols  db "12",00h

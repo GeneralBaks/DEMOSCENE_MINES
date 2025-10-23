@@ -1,0 +1,1 @@
+arr_cursor_back array CURSOR_SIZE * CURSOR_SIZE

@@ -29,7 +29,7 @@ proc get_mouse_state
     mov ax,3       ; Функция получения позиции и кнопок
     int 33h        ; CX = X, DX = Y, BX = кнопки
     
-	mov ax, [cursor_x]
+    mov ax, [cursor_x]
     mov [prev_x], ax
     mov ax, [cursor_y]
     mov [prev_y], ax
@@ -43,8 +43,7 @@ endp
 proc click_handle uses si
     mov bx,clickables_matrix
     add bx,[active_form_index]
-    mov ax,[bx]
-    xchg ax,bx
+    mov bx,[bx]
     
     movzx cx,byte[bx]  ; Количество кликабельных элементов
     inc bx
@@ -106,12 +105,11 @@ proc mouse_handle
     jz .update_prev_button
     
     ; Обработка нажатия кнопки (только при новом нажатии)
-    cmp [prev_button], NONE   
-    jne .update_prev_button
-    
-    ; Сохраняем кнопку и обрабатываем клик
-    mov [mouse_button], bl
-    stdcall click_handle
+    _if byte[prev_button] == NONE
+        ; Сохраняем кнопку и обрабатываем клик
+        mov [mouse_button], bl
+        stdcall click_handle
+    _end
     
 .update_prev_button:
     ; Обновляем состояние предыдущей кнопки
@@ -119,6 +117,8 @@ proc mouse_handle
     
     ret
 endp
+
+; Процедуры ниже по итогу не используются
 
 ; Скрытие курсора
 proc hide_cursor
