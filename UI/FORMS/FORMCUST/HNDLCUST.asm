@@ -25,16 +25,16 @@ proc edit_on_click \
     ret
 endp
 
-; Обработка нажатия на кнопку "ОК" в форме пользовательских настроек
+; РћР±СЂР°Р±РѕС‚РєР° РЅР°Р¶Р°С‚РёСЏ РЅР° РєРЅРѕРїРєСѓ "РћРљ" РІ С„РѕСЂРјРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёС… РЅР°СЃС‚СЂРѕРµРє
 proc fm_custom_options_ok_button_click
     test [mouse_button], BTN_LEFT
     _if zf == 1 jmp .end_proc
     
         stdcall get_custom_set
-        jc .invalid_data        ; Ошибка — пропустить и вернуться на главную форму
+        jc .invalid_data        ; РћС€РёР±РєР° вЂ” РїСЂРѕРїСѓСЃС‚РёС‚СЊ Рё РІРµСЂРЅСѓС‚СЊСЃСЏ РЅР° РіР»Р°РІРЅСѓСЋ С„РѕСЂРјСѓ
     
-            ; Переход к генерации новой карты
-            push ax ax cx dx     ; Сохраняем значения: мины, строки, столбцы
+            ; РџРµСЂРµС…РѕРґ Рє РіРµРЅРµСЂР°С†РёРё РЅРѕРІРѕР№ РєР°СЂС‚С‹
+            push ax ax cx dx     ; РЎРѕС…СЂР°РЅСЏРµРј Р·РЅР°С‡РµРЅРёСЏ: РјРёРЅС‹, СЃС‚СЂРѕРєРё, СЃС‚РѕР»Р±С†С‹
             stdcall clear_matrix, field_matrix
             pop dx cx ax
             stdcall update_field_matrix, cx, dx, ax
@@ -56,16 +56,16 @@ proc fm_custom_options_ok_button_click
 endp
 
 
-; Получает пользовательские значения (столбцы, строки, мины)
-; Проверяет на валидность. Устанавливает CF=1 при ошибке.
-; Здесь я пожалел, что использовал С строки
+; РџРѕР»СѓС‡Р°РµС‚ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёРµ Р·РЅР°С‡РµРЅРёСЏ (СЃС‚РѕР»Р±С†С‹, СЃС‚СЂРѕРєРё, РјРёРЅС‹)
+; РџСЂРѕРІРµСЂСЏРµС‚ РЅР° РІР°Р»РёРґРЅРѕСЃС‚СЊ. РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ CF=1 РїСЂРё РѕС€РёР±РєРµ.
+; Р—РґРµСЃСЊ СЏ РїРѕР¶Р°Р»РµР», С‡С‚Рѕ РёСЃРїРѕР»СЊР·РѕРІР°Р» РЎ СЃС‚СЂРѕРєРё
 proc get_custom_set
     locals
-        temp_cols db ?   ; Временные переменные
+        temp_cols db ?   ; Р’СЂРµРјРµРЅРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ
         temp_rows db ?
     endl
     
-    ; Читаем и проверяем колонки
+    ; Р§РёС‚Р°РµРј Рё РїСЂРѕРІРµСЂСЏРµРј РєРѕР»РѕРЅРєРё
     _set_seg es to ds
     stdcall arr_len, str_ed_cols
     _unset_seg
@@ -75,7 +75,7 @@ proc get_custom_set
     _if ax > MAX_COLS jmp .invalid_data
     mov [temp_cols],al
     
-    ; Читаем и проверяем строки
+    ; Р§РёС‚Р°РµРј Рё РїСЂРѕРІРµСЂСЏРµРј СЃС‚СЂРѕРєРё
     _set_seg es to ds
     stdcall arr_len, str_ed_rows
     _unset_seg
@@ -85,7 +85,7 @@ proc get_custom_set
     _if ax > MAX_ROWS jmp .invalid_data
     mov [temp_rows],al
     
-    ; Читаем и проверяем мины
+    ; Р§РёС‚Р°РµРј Рё РїСЂРѕРІРµСЂСЏРµРј РјРёРЅС‹
     _set_seg es to ds
     stdcall arr_len, str_ed_mines
     _unset_seg
@@ -94,20 +94,20 @@ proc get_custom_set
     
     movzx dx, [temp_cols]
     movzx cx, [temp_rows]
-    imul cx, dx               ; Общее количество клеток
+    imul cx, dx               ; РћР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РєР»РµС‚РѕРє
     
     _if ax < 1 jmp .invalid_data
-    _if ax > cx jmp .invalid_data ; Мин не должно быть больше клеток
+    _if ax > cx jmp .invalid_data ; РњРёРЅ РЅРµ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ Р±РѕР»СЊС€Рµ РєР»РµС‚РѕРє
 
-    ; Подготовка параметров (cols в cx, rows в dx)
+    ; РџРѕРґРіРѕС‚РѕРІРєР° РїР°СЂР°РјРµС‚СЂРѕРІ (cols РІ cx, rows РІ dx)
     movzx cx,[temp_cols]
     movzx dx,[temp_rows]
 
-    clc                         ; Валидные данные
+    clc                         ; Р’Р°Р»РёРґРЅС‹Рµ РґР°РЅРЅС‹Рµ
     jmp .end_proc
 
 .invalid_data:
-    stc                         ; Ошибка
+    stc                         ; РћС€РёР±РєР°
 .end_proc:
     ret
 endp

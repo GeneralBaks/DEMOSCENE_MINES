@@ -7,10 +7,10 @@ proc generate_mines uses bx si di, \
     endl
     
     mov si, [mtrx]
-    mov [base_ptr], si      ; Сохраняем базовый указатель
+    mov [base_ptr], si      ; РЎРѕС…СЂР°РЅСЏРµРј Р±Р°Р·РѕРІС‹Р№ СѓРєР°Р·Р°С‚РµР»СЊ
     
     movzx cx,byte[si]
-    ;высчитываем адресс в массиве недопустимой ¤чейки
+    ;РІС‹СЃС‡РёС‚С‹РІР°РµРј Р°РґСЂРµСЃСЃ РІ РјР°СЃСЃРёРІРµ РЅРµРґРѕРїСѓСЃС‚РёРјРѕР№ В¤С‡РµР№РєРё
     _calc_mtrx_offset [avoid_col],[avoid_row],cx
     mov [avoid_offset],ax
 
@@ -18,23 +18,23 @@ proc generate_mines uses bx si di, \
     _loop
         push cx
         @@:
-        ; Получаем случайную позицию в массиве
+        ; РџРѕР»СѓС‡Р°РµРј СЃР»СѓС‡Р°Р№РЅСѓСЋ РїРѕР·РёС†РёСЋ РІ РјР°СЃСЃРёРІРµ
         mov si,[base_ptr]
-        stdcall random_get, 0,[si+3]  ; от 0 до размера поля
+        stdcall random_get, 0,[si+3]  ; РѕС‚ 0 РґРѕ СЂР°Р·РјРµСЂР° РїРѕР»СЏ
         
-        ; Проверяем, не совпадает ли с недопустимой позицией
+        ; РџСЂРѕРІРµСЂСЏРµРј, РЅРµ СЃРѕРІРїР°РґР°РµС‚ Р»Рё СЃ РЅРµРґРѕРїСѓСЃС‚РёРјРѕР№ РїРѕР·РёС†РёРµР№
         cmp ax,[avoid_offset]
         je @b 
         
-        ; Вычисляем реальный адрес клетки
+        ; Р’С‹С‡РёСЃР»СЏРµРј СЂРµР°Р»СЊРЅС‹Р№ Р°РґСЂРµСЃ РєР»РµС‚РєРё
         add si, 5               
         add si, ax              
         
-        ; Проверяем, свободна ли клетка
+        ; РџСЂРѕРІРµСЂСЏРµРј, СЃРІРѕР±РѕРґРЅР° Р»Рё РєР»РµС‚РєР°
         test byte[si], MASK_MINE
         jne @b                  
         
-        ; Устанавливаем мину
+        ; РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РјРёРЅСѓ
         mov byte[si], MASK_MINE
         stdcall generate_neighbours, si,[mtrx]
         
@@ -58,10 +58,10 @@ proc generate_neighbours uses bx di si, \
     
     mov bx, [mtrx]
     mov si, bx
-    add si, 5                    ; первая ячейка массива
+    add si, 5                    ; РїРµСЂРІР°СЏ СЏС‡РµР№РєР° РјР°СЃСЃРёРІР°
     mov [first_pos], si
     
-    ; Сохраняем размеры матрицы
+    ; РЎРѕС…СЂР°РЅСЏРµРј СЂР°Р·РјРµСЂС‹ РјР°С‚СЂРёС†С‹
     mov al, byte[bx]             ; cols
     mov [cols], al
     mov al, byte[bx+1]           ; rows
@@ -70,33 +70,33 @@ proc generate_neighbours uses bx di si, \
     mov ax, si
     mov dx, word[bx+3]        
     add ax, dx
-    dec ax                       ; последняя ячейка массива
+    dec ax                       ; РїРѕСЃР»РµРґРЅСЏСЏ СЏС‡РµР№РєР° РјР°СЃСЃРёРІР°
     mov [last_pos], ax
     
     mov di, [pos]
     
-    ; Вычисляем текущие координаты позиции мины
+    ; Р’С‹С‡РёСЃР»СЏРµРј С‚РµРєСѓС‰РёРµ РєРѕРѕСЂРґРёРЅР°С‚С‹ РїРѕР·РёС†РёРё РјРёРЅС‹
     mov ax, di
-    sub ax, [first_pos]          ; offset от начала массива
+    sub ax, [first_pos]          ; offset РѕС‚ РЅР°С‡Р°Р»Р° РјР°СЃСЃРёРІР°
     
     ; row = offset / cols
     movzx bx,[cols]
     xor dx, dx
     div bx                       ; AX = row, DX = col
-    mov [current_row], ax        ; сохраняем row
-    mov [current_col], dx        ; сохраняем col
+    mov [current_row], ax        ; СЃРѕС…СЂР°РЅСЏРµРј row
+    mov [current_col], dx        ; СЃРѕС…СЂР°РЅСЏРµРј col
     
-    ; Обходим все соседние клетки (-1,-1) до (1,1) 
+    ; РћР±С…РѕРґРёРј РІСЃРµ СЃРѕСЃРµРґРЅРёРµ РєР»РµС‚РєРё (-1,-1) РґРѕ (1,1) 
     _for si=-1 : si<=1 : 1       ; row_offset
         _for di=-1 : di<=1 : 1   ; col_offset
-            ; Пропускаем центральную клетку (0,0)
+            ; РџСЂРѕРїСѓСЃРєР°РµРј С†РµРЅС‚СЂР°Р»СЊРЅСѓСЋ РєР»РµС‚РєСѓ (0,0)
             _if si == 0
                 _if di == 0
-                    jmp @f       ; переход к концу текущей итерации
+                    jmp @f       ; РїРµСЂРµС…РѕРґ Рє РєРѕРЅС†Сѓ С‚РµРєСѓС‰РµР№ РёС‚РµСЂР°С†РёРё
                 _end
             _end
             
-            ; Вычисляем новые координаты
+            ; Р’С‹С‡РёСЃР»СЏРµРј РЅРѕРІС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹
             movzx ax, [rows]
             mov dx, [current_row]    
             add dx, si               ; + row_offset
@@ -109,20 +109,20 @@ proc generate_neighbours uses bx di si, \
             _if bx < 0 jmp @f              
             _if bx >= ax jmp @f     
             
-            ; Вычисляем адрес клетки: first_pos + row*cols + col
+            ; Р’С‹С‡РёСЃР»СЏРµРј Р°РґСЂРµСЃ РєР»РµС‚РєРё: first_pos + row*cols + col
             mov ax, dx               
             movzx cx, [cols]         
             imul ax, cx              ; row * cols
             add ax, bx               ; + col
             add ax, [first_pos]      ; + base address
             
-            ; Проверяем, что адрес в допустимых пределах
+            ; РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ Р°РґСЂРµСЃ РІ РґРѕРїСѓСЃС‚РёРјС‹С… РїСЂРµРґРµР»Р°С…
             _if ax < [first_pos] jmp @f  
             _if ax > [last_pos] jmp @f  
                     
-            mov bx,ax               ; адрес соседней клетки
+            mov bx,ax               ; Р°РґСЂРµСЃ СЃРѕСЃРµРґРЅРµР№ РєР»РµС‚РєРё
             
-            ; Если не мина - увеличиваем счетчик
+            ; Р•СЃР»Рё РЅРµ РјРёРЅР° - СѓРІРµР»РёС‡РёРІР°РµРј СЃС‡РµС‚С‡РёРє
             test byte[bx], MASK_MINE
             jnz .skip_inc
             
@@ -144,15 +144,15 @@ proc open_cells uses bx si di, \
     mov si,[mtrx]
     mov al,byte[col_0]
     mov ah,byte[row_0]
-    ; Проверяем границы поля
+    ; РџСЂРѕРІРµСЂСЏРµРј РіСЂР°РЅРёС†С‹ РїРѕР»СЏ
     _if al < 0 jmp .end_proc
     _if al >= byte[si] jmp .end_proc
     _if ah < 0 jmp .end_proc
     _if ah >= byte[si+1] jmp .end_proc
     
-                        ;здесь у столбца и строки индексация начинается с 0
+                        ;Р·РґРµСЃСЊ Сѓ СЃС‚РѕР»Р±С†Р° Рё СЃС‚СЂРѕРєРё РёРЅРґРµРєСЃР°С†РёСЏ РЅР°С‡РёРЅР°РµС‚СЃСЏ СЃ 0
     mov cx,[bx+16]      ;cx = cell_size
-    inc cx              ;cell_size + 1 для учёта разделителя 
+    inc cx              ;cell_size + 1 РґР»СЏ СѓС‡С‘С‚Р° СЂР°Р·РґРµР»РёС‚РµР»СЏ 
      
     mov ax,[bx]         ;ax = grid.x
     mov dx,[col_0]      ;dx = cur_col
@@ -196,7 +196,7 @@ proc open_cells uses bx si di, \
     or byte[si],MASK_OPENED
     
     movzx dx, byte[si]
-    and dl, MASK_COUNT      ; Извлекаем счетчик соседних мин
+    and dl, MASK_COUNT      ; РР·РІР»РµРєР°РµРј СЃС‡РµС‚С‡РёРє СЃРѕСЃРµРґРЅРёС… РјРёРЅ
     _if dl > 0 
         stdcall select_num_color, dx
         add dl,'0'

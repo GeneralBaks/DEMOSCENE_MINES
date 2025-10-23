@@ -1,28 +1,28 @@
-; === Рисует линию заданной длины и направления ===
+; === Р РёСЃСѓРµС‚ Р»РёРЅРёСЋ Р·Р°РґР°РЅРЅРѕР№ РґР»РёРЅС‹ Рё РЅР°РїСЂР°РІР»РµРЅРёСЏ ===
 proc draw_line uses si di, \
     pos, len, dir, color:BYTE
 
-    ; Заносим смещение в видеопамяти: y * 320 + x
+    ; Р—Р°РЅРѕСЃРёРј СЃРјРµС‰РµРЅРёРµ РІ РІРёРґРµРѕРїР°РјСЏС‚Рё: y * 320 + x
     mov di,[pos]
 
-    mov al,[color]       ; Цвет пикселя
-    mov cx,[len]         ; Счётчик длины линии
+    mov al,[color]       ; Р¦РІРµС‚ РїРёРєСЃРµР»СЏ
+    mov cx,[len]         ; РЎС‡С‘С‚С‡РёРє РґР»РёРЅС‹ Р»РёРЅРёРё
     
     _switch word[dir]
-    _case DIR_HOR        ; Горизонтальная линия
+    _case DIR_HOR        ; Р“РѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ
         rep stosb
-    _case DIR_VER        ; Вертикальная линия
+    _case DIR_VER        ; Р’РµСЂС‚РёРєР°Р»СЊРЅР°СЏ Р»РёРЅРёСЏ
         _loop
             mov [es:di], al
             add di,SCR_W
         _end
-    _case DIR_DIAG_L     ; Диагональ влево вниз
+    _case DIR_DIAG_L     ; Р”РёР°РіРѕРЅР°Р»СЊ РІР»РµРІРѕ РІРЅРёР·
         _loop
             mov [es:di],al
             add di,SCR_W
             inc di
         _end
-    _case DIR_DIAG_R     ; Диагональ вправо вниз
+    _case DIR_DIAG_R     ; Р”РёР°РіРѕРЅР°Р»СЊ РІРїСЂР°РІРѕ РІРЅРёР·
         _loop
             mov [es:di],al
             add di,SCR_W
@@ -35,27 +35,27 @@ endp
 
 
 
-; Тонкая рамка с цветами для верхней/нижней стороны
+; РўРѕРЅРєР°СЏ СЂР°РјРєР° СЃ С†РІРµС‚Р°РјРё РґР»СЏ РІРµСЂС…РЅРµР№/РЅРёР¶РЅРµР№ СЃС‚РѕСЂРѕРЅС‹
 proc draw_frame \
     pos, wt, ht, cond
 
-    ; --- подготовка цветов ---
-    _if [cond] == FRM_STD     ; для выпуклых 
+    ; --- РїРѕРґРіРѕС‚РѕРІРєР° С†РІРµС‚РѕРІ ---
+    _if [cond] == FRM_STD     ; РґР»СЏ РІС‹РїСѓРєР»С‹С… 
         mov ax,FRM_UP_COL
         mov dx,FRM_DW_COL
-    _elseif [cond] == FRM_REV ; для вогнутых
+    _elseif [cond] == FRM_REV ; РґР»СЏ РІРѕРіРЅСѓС‚С‹С…
         mov ax,FRM_DW_COL
         mov dx,FRM_UP_COL
-    _else                     ; заливка одним цветом
+    _else                     ; Р·Р°Р»РёРІРєР° РѕРґРЅРёРј С†РІРµС‚РѕРј
         mov ax,[cond]
         mov dx,[cond]
     _end
 
-    ; === Верх/лево ===
+    ; === Р’РµСЂС…/Р»РµРІРѕ ===
     stdcall draw_line, [pos],[wt],DIR_HOR,ax
     stdcall draw_line, [pos],[ht],DIR_VER,ax
 
-    ; === Низ/право ===
+    ; === РќРёР·/РїСЂР°РІРѕ ===
     imul cx,[ht],SCR_W
     add cx,[pos]
     sub cx,SCR_W
@@ -71,25 +71,25 @@ proc draw_frame \
 endp
 
 
-; Заливка прямоугольника
+; Р—Р°Р»РёРІРєР° РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР°
 proc draw_rect uses si di, \
     pos, wt, ht, color:BYTE
-    mov al,[color]          ; Цвет пикселя
-    _if al==0 jmp .end_proc ; Если цвет NONE, то не отрисовываем
+    mov al,[color]          ; Р¦РІРµС‚ РїРёРєСЃРµР»СЏ
+    _if al==0 jmp .end_proc ; Р•СЃР»Рё С†РІРµС‚ NONE, С‚Рѕ РЅРµ РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј
     
     mov cx,[ht]
-    _if al==0 jmp .end_proc ; Если высота 0 - выходим
+    _if al==0 jmp .end_proc ; Р•СЃР»Рё РІС‹СЃРѕС‚Р° 0 - РІС‹С…РѕРґРёРј
     
     mov di,[pos]
     
     _loop
         push cx
-        mov cx,[wt]          ; Заливаем строку шириной wt
+        mov cx,[wt]          ; Р—Р°Р»РёРІР°РµРј СЃС‚СЂРѕРєСѓ С€РёСЂРёРЅРѕР№ wt
         rep stosb
         pop cx
 
-        add di,SCR_W         ; Переход на следующую строку
-        sub di,[wt]          ; Возвращаемся к началу следующей строки
+        add di,SCR_W         ; РџРµСЂРµС…РѕРґ РЅР° СЃР»РµРґСѓСЋС‰СѓСЋ СЃС‚СЂРѕРєСѓ
+        sub di,[wt]          ; Р’РѕР·РІСЂР°С‰Р°РµРјСЃСЏ Рє РЅР°С‡Р°Р»Сѓ СЃР»РµРґСѓСЋС‰РµР№ СЃС‚СЂРѕРєРё
     _end
 
 .end_proc:
@@ -97,7 +97,7 @@ proc draw_rect uses si di, \
 endp
 
 
-; === Отрисовка закрашенной ячейки с двойной рамкой ===
+; === РћС‚СЂРёСЃРѕРІРєР° Р·Р°РєСЂР°С€РµРЅРЅРѕР№ СЏС‡РµР№РєРё СЃ РґРІРѕР№РЅРѕР№ СЂР°РјРєРѕР№ ===
 proc draw_cell_h \
     pos, size
     
@@ -114,7 +114,7 @@ proc draw_cell_h \
 endp
 
 
-; === Отрисовка сетку (линии между ячейками) ===
+; === РћС‚СЂРёСЃРѕРІРєР° СЃРµС‚РєСѓ (Р»РёРЅРёРё РјРµР¶РґСѓ СЏС‡РµР№РєР°РјРё) ===
 proc draw_grid uses si di, \
     grid
 
@@ -122,9 +122,9 @@ proc draw_grid uses si di, \
     _calc_offset [bx], [bx+2], dx
     sub dx, SCR_W
     dec dx
-    push dx  ; Сохраняем начальный DX
+    push dx  ; РЎРѕС…СЂР°РЅСЏРµРј РЅР°С‡Р°Р»СЊРЅС‹Р№ DX
 
-    ; Горизонтальные разделители
+    ; Р“РѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅС‹Рµ СЂР°Р·РґРµР»РёС‚РµР»Рё
     mov cx, [bx+14]     ; rows
     inc cx
     _loop
@@ -136,7 +136,7 @@ proc draw_grid uses si di, \
         add dx, ax
     _end
 
-    ; Вертикальные разделители
+    ; Р’РµСЂС‚РёРєР°Р»СЊРЅС‹Рµ СЂР°Р·РґРµР»РёС‚РµР»Рё
     pop dx
     mov cx, [bx+12]     ; cols
     inc cx
@@ -151,13 +151,13 @@ proc draw_grid uses si di, \
     ret
 endp
 
-; Отрисовка строки символов через draw_char
+; РћС‚СЂРёСЃРѕРІРєР° СЃС‚СЂРѕРєРё СЃРёРјРІРѕР»РѕРІ С‡РµСЂРµР· draw_char
 proc draw_string uses bx, \
         pos, string, color
     
     mov bx,[string]
     
-    ; Узнаём длину строки
+    ; РЈР·РЅР°С‘Рј РґР»РёРЅСѓ СЃС‚СЂРѕРєРё
     _set_seg es to ds
     stdcall arr_len, bx
     _unset_seg
@@ -171,7 +171,7 @@ proc draw_string uses bx, \
         stdcall draw_char, [pos],ax,[color]
         pop bx
         inc bx
-        add [pos],7 ; Смещение по ширине символа (+ отступ)
+        add [pos],7 ; РЎРјРµС‰РµРЅРёРµ РїРѕ С€РёСЂРёРЅРµ СЃРёРјРІРѕР»Р° (+ РѕС‚СЃС‚СѓРї)
         
         pop cx
     _end
@@ -179,34 +179,34 @@ proc draw_string uses bx, \
     ret
 endp
 
-; Вывод символа (цифра или буква) с шаблоном
+; Р’С‹РІРѕРґ СЃРёРјРІРѕР»Р° (С†РёС„СЂР° РёР»Рё Р±СѓРєРІР°) СЃ С€Р°Р±Р»РѕРЅРѕРј
 proc draw_char uses bx si di, \
     pos, char:byte, color:byte
     
-    ; Проверяем, цифра ли это (0-9)
+    ; РџСЂРѕРІРµСЂСЏРµРј, С†РёС„СЂР° Р»Рё СЌС‚Рѕ (0-9)
     _if [char] < '0' jmp .check_letter
     _if [char] > '9' jmp .check_letter
         
-    ; Это цифра
+    ; Р­С‚Рѕ С†РёС„СЂР°
     sub [char],'0'
     mov si,digits_data
     jmp .draw_symbol
     
 .check_letter:
-    ; Проверяем, буква ли это (A-Z) 
+    ; РџСЂРѕРІРµСЂСЏРµРј, Р±СѓРєРІР° Р»Рё СЌС‚Рѕ (A-Z) 
     _if [char] < 'A' jmp .check_extra
     _if [char] > 'Z' jmp .check_extra
     
-    ; Это буква
+    ; Р­С‚Рѕ Р±СѓРєРІР°
     sub [char], 'A'
     mov si,letters_data
     jmp .draw_symbol
     
 .check_extra:
-    ; Проверяем дополнительные символы
+    ; РџСЂРѕРІРµСЂСЏРµРј РґРѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ СЃРёРјРІРѕР»С‹
     _if [char] == '?' jmp .draw_question
     _if [char] == '*' jmp .draw_mine  
-    jmp .end_proc  ; Неизвестный символ
+    jmp .end_proc  ; РќРµРёР·РІРµСЃС‚РЅС‹Р№ СЃРёРјРІРѕР»
     
 .draw_question:
     mov si, extra_symbols_data.question
@@ -220,30 +220,30 @@ proc draw_char uses bx si di, \
     movzx ax,[char]
     mov dx,7
     mul dx              ; AX = symbol * 7
-    add si,ax          ; SI указывает на первую строку символа
+    add si,ax          ; SI СѓРєР°Р·С‹РІР°РµС‚ РЅР° РїРµСЂРІСѓСЋ СЃС‚СЂРѕРєСѓ СЃРёРјРІРѕР»Р°
 .skip_table:
-    ; Цвет пикселя
+    ; Р¦РІРµС‚ РїРёРєСЃРµР»СЏ
     mov al,byte[color]
 
-    ; Начальное смещение в видеопамяти
+    ; РќР°С‡Р°Р»СЊРЅРѕРµ СЃРјРµС‰РµРЅРёРµ РІ РІРёРґРµРѕРїР°РјСЏС‚Рё
     mov di,[pos]
 
-    ; Рисуем 7 строк
+    ; Р РёСЃСѓРµРј 7 СЃС‚СЂРѕРє
     _loop 7
-        mov dl,[si]        ; Загружаем байт-строку из данных символа
-        inc si              ; Следующая строка
-        mov bx,10000b     ; Рисуем 5 пикселей (от старшего к младшему биту)
+        mov dl,[si]        ; Р—Р°РіСЂСѓР¶Р°РµРј Р±Р°Р№С‚-СЃС‚СЂРѕРєСѓ РёР· РґР°РЅРЅС‹С… СЃРёРјРІРѕР»Р°
+        inc si              ; РЎР»РµРґСѓСЋС‰Р°СЏ СЃС‚СЂРѕРєР°
+        mov bx,10000b     ; Р РёСЃСѓРµРј 5 РїРёРєСЃРµР»РµР№ (РѕС‚ СЃС‚Р°СЂС€РµРіРѕ Рє РјР»Р°РґС€РµРјСѓ Р±РёС‚Сѓ)
 
         _loop 5
             test dl,bl
             _if zf == 0
-                mov [es:di],al     ; Рисуем пиксель
+                mov [es:di],al     ; Р РёСЃСѓРµРј РїРёРєСЃРµР»СЊ
             _end      
             inc di
             shr bx,1
         _end
 
-        add di, SCR_W - 5     ; Переход на следующую строку
+        add di, SCR_W - 5     ; РџРµСЂРµС…РѕРґ РЅР° СЃР»РµРґСѓСЋС‰СѓСЋ СЃС‚СЂРѕРєСѓ
     _end
 
 .end_proc:
@@ -269,23 +269,23 @@ proc draw_centered_char \
     ret
 endp
 
-; Отрисовка прямоугольной рамки с толщиной
+; РћС‚СЂРёСЃРѕРІРєР° РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРѕР№ СЂР°РјРєРё СЃ С‚РѕР»С‰РёРЅРѕР№
 proc draw_hollow_rect uses di si, \
     pos, outer_w, outer_h, border_thickness, color:BYTE
 
     mov ax,[border_thickness]
     shl ax,1
-    ; === Расчёт внутреннего прямоугольника (центр, без границ) ===
+    ; === Р Р°СЃС‡С‘С‚ РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР° (С†РµРЅС‚СЂ, Р±РµР· РіСЂР°РЅРёС†) ===
     mov si,[outer_w]
     sub si,ax
     mov dx,[outer_h]
     sub dx,ax
 
-    ; === Начало отрисовки ===
+    ; === РќР°С‡Р°Р»Рѕ РѕС‚СЂРёСЃРѕРІРєРё ===
     mov di,[pos]
     mov al,[color]
 
-    ; --- Верхняя граница ---
+    ; --- Р’РµСЂС…РЅСЏСЏ РіСЂР°РЅРёС†Р° ---
     _loop [border_thickness]
         push cx
         mov cx,[outer_w]
@@ -295,12 +295,12 @@ proc draw_hollow_rect uses di si, \
         pop cx
     _end
 
-    ; --- Боковые границы ---
+    ; --- Р‘РѕРєРѕРІС‹Рµ РіСЂР°РЅРёС†С‹ ---
     _loop dx
         push cx
         mov cx,[border_thickness]
         rep stosb
-        add di,si               ; Пропускаем внутреннюю часть
+        add di,si               ; РџСЂРѕРїСѓСЃРєР°РµРј РІРЅСѓС‚СЂРµРЅРЅСЋСЋ С‡Р°СЃС‚СЊ
         mov cx,[border_thickness]
         rep stosb
         add di,SCR_W
@@ -308,7 +308,7 @@ proc draw_hollow_rect uses di si, \
         pop cx
     _end
 
-    ; --- Нижняя граница ---
+    ; --- РќРёР¶РЅСЏСЏ РіСЂР°РЅРёС†Р° ---
     _loop [border_thickness]
         push cx
         mov cx,[outer_w]
@@ -321,7 +321,7 @@ proc draw_hollow_rect uses di si, \
     ret
 endp
 
-; Панель с рамкой и фоном
+; РџР°РЅРµР»СЊ СЃ СЂР°РјРєРѕР№ Рё С„РѕРЅРѕРј
 proc draw_panel, \
     pos, wt, ht, color, frm_cond
 
@@ -341,11 +341,11 @@ proc draw_panel, \
     ret
 endp
 
-; Отрисовка формы с рамкой и заливкой
+; РћС‚СЂРёСЃРѕРІРєР° С„РѕСЂРјС‹ СЃ СЂР°РјРєРѕР№ Рё Р·Р°Р»РёРІРєРѕР№
 proc draw_form \
     pos, wt, ht, back_col, bw, board_col
     
-    ; --- Основная внешняя рамка ---
+    ; --- РћСЃРЅРѕРІРЅР°СЏ РІРЅРµС€РЅСЏСЏ СЂР°РјРєР° ---
     stdcall draw_frame, [pos],[wt],[ht],FRM_STD
     
     add [pos],SCR_W+1
@@ -374,7 +374,7 @@ proc draw_form \
     ret
 endp
 
-; Отрисовка строки с опциональной рамкой и фоном
+; РћС‚СЂРёСЃРѕРІРєР° СЃС‚СЂРѕРєРё СЃ РѕРїС†РёРѕРЅР°Р»СЊРЅРѕР№ СЂР°РјРєРѕР№ Рё С„РѕРЅРѕРј
 proc draw_label uses bx, \
     label
     
@@ -410,75 +410,75 @@ endp
 proc set_cell_char uses bx si di, \
         grid, mtrx, col_0, row_0
 
-    ; Получаем указатели на структуру grid и матрицу состояний
+    ; РџРѕР»СѓС‡Р°РµРј СѓРєР°Р·Р°С‚РµР»Рё РЅР° СЃС‚СЂСѓРєС‚СѓСЂСѓ grid Рё РјР°С‚СЂРёС†Сѓ СЃРѕСЃС‚РѕСЏРЅРёР№
     mov bx,[grid]    
     mov si,[mtrx]
 
-    ; Получаем размер ячейки 
+    ; РџРѕР»СѓС‡Р°РµРј СЂР°Р·РјРµСЂ СЏС‡РµР№РєРё 
     mov cx,[bx+16]      ; cx := cell_size
-    inc cx              ; cell_size + 1 для границы между ячейками
+    inc cx              ; cell_size + 1 РґР»СЏ РіСЂР°РЅРёС†С‹ РјРµР¶РґСѓ СЏС‡РµР№РєР°РјРё
      
-    ; Вычисляем координату x выбранной ячейки
+    ; Р’С‹С‡РёСЃР»СЏРµРј РєРѕРѕСЂРґРёРЅР°С‚Сѓ x РІС‹Р±СЂР°РЅРЅРѕР№ СЏС‡РµР№РєРё
     mov ax,[bx]         ; ax := grid.x
-    mov dx,[col_0]      ; dx := индекс столбца (0-based)
+    mov dx,[col_0]      ; dx := РёРЅРґРµРєСЃ СЃС‚РѕР»Р±С†Р° (0-based)
     imul dx,cx          ; dx := col * (cell_size + 1)
-    add ax,dx           ; ax := x-координата ячейки
-    push ax             ; сохраняем для offset-а
+    add ax,dx           ; ax := x-РєРѕРѕСЂРґРёРЅР°С‚Р° СЏС‡РµР№РєРё
+    push ax             ; СЃРѕС…СЂР°РЅСЏРµРј РґР»СЏ offset-Р°
 
-    ; Вычисляем координату y выбранной ячейки
+    ; Р’С‹С‡РёСЃР»СЏРµРј РєРѕРѕСЂРґРёРЅР°С‚Сѓ y РІС‹Р±СЂР°РЅРЅРѕР№ СЏС‡РµР№РєРё
     mov ax,[bx+2]       ; ax := grid.y
-    mov dx,[row_0]      ; dx := индекс строки (0-based)
+    mov dx,[row_0]      ; dx := РёРЅРґРµРєСЃ СЃС‚СЂРѕРєРё (0-based)
     imul dx,cx          ; dx := row * (cell_size + 1)
-    add ax,dx           ; ax := y-координата ячейки
-    pop cx              ; cx := x-координата ячейки
+    add ax,dx           ; ax := y-РєРѕРѕСЂРґРёРЅР°С‚Р° СЏС‡РµР№РєРё
+    pop cx              ; cx := x-РєРѕРѕСЂРґРёРЅР°С‚Р° СЏС‡РµР№РєРё
 
-    ; Вычисляем смещение в буфере экрана по координатам x/y
+    ; Р’С‹С‡РёСЃР»СЏРµРј СЃРјРµС‰РµРЅРёРµ РІ Р±СѓС„РµСЂРµ СЌРєСЂР°РЅР° РїРѕ РєРѕРѕСЂРґРёРЅР°С‚Р°Рј x/y
     _calc_offset cx,ax,di
 
-    ; Вычисляем смещение в матрице по col и row
+    ; Р’С‹С‡РёСЃР»СЏРµРј СЃРјРµС‰РµРЅРёРµ РІ РјР°С‚СЂРёС†Рµ РїРѕ col Рё row
     _calc_mtrx_offset [col_0],[row_0],[bx+12]
-    add si,5            ; пропускаем заголовок матрицы
-    add si,ax           ; получаем адрес состояния текущей ячейки
+    add si,5            ; РїСЂРѕРїСѓСЃРєР°РµРј Р·Р°РіРѕР»РѕРІРѕРє РјР°С‚СЂРёС†С‹
+    add si,ax           ; РїРѕР»СѓС‡Р°РµРј Р°РґСЂРµСЃ СЃРѕСЃС‚РѕСЏРЅРёСЏ С‚РµРєСѓС‰РµР№ СЏС‡РµР№РєРё
 
-    ; Читаем состояние ячейки
+    ; Р§РёС‚Р°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ СЏС‡РµР№РєРё
     mov al,byte[si]
     test al,MASK_OPENED
-    jnz .end_proc       ; если уже открыта — ничего не делаем
+    jnz .end_proc       ; РµСЃР»Рё СѓР¶Рµ РѕС‚РєСЂС‹С‚Р° вЂ” РЅРёС‡РµРіРѕ РЅРµ РґРµР»Р°РµРј
 
     and al,MASK_SYMBOL
 
-    ; Переход по символу (HIDDEN / QUESTION / FLAG)
+    ; РџРµСЂРµС…РѕРґ РїРѕ СЃРёРјРІРѕР»Сѓ (HIDDEN / QUESTION / FLAG)
     _switch al
 
     _case MASK_HIDDEN
-        ; Ставим вопросик
+        ; РЎС‚Р°РІРёРј РІРѕРїСЂРѕСЃРёРє
         or byte[si],MASK_QUESTION
         stdcall draw_cell_h, di,[bx+16]
         stdcall draw_centered_char, di,[bx+16],[bx+16],'?',CL_RED_0
 
     _case MASK_QUESTION
-        ; Убираем вопросик
+        ; РЈР±РёСЂР°РµРј РІРѕРїСЂРѕСЃРёРє
         xor byte[si],MASK_QUESTION
         _if [mines_left] == 0 jmp @f
 
-        ; Уменьшаем счётчик мин
+        ; РЈРјРµРЅСЊС€Р°РµРј СЃС‡С‘С‚С‡РёРє РјРёРЅ
         dec byte[mines_left]
         movzx ax,[mines_left]
         stdcall word_to_str, ax,str_mines_num
         _mcall fm_main.pn_control.lb_mines:draw 
         
-        ; Ставим флаг
+        ; РЎС‚Р°РІРёРј С„Р»Р°Рі
         or byte[si],MASK_FLAG
         stdcall draw_cell_h, di,[bx+16]
         stdcall draw_centered_char, di,[bx+16],[bx+16],'F',CL_RED_0
 
     _case MASK_FLAG
-        ; Убираем флаг
+        ; РЈР±РёСЂР°РµРј С„Р»Р°Рі
         xor byte[si],MASK_FLAG
         inc byte[mines_left]
 
         @@:
-        ; Обновляем счётчик мин
+        ; РћР±РЅРѕРІР»СЏРµРј СЃС‡С‘С‚С‡РёРє РјРёРЅ
         movzx ax,[mines_left]
         stdcall word_to_str, ax,str_mines_num
         _mcall fm_main.pn_control.lb_mines:draw 
@@ -494,33 +494,33 @@ endp
 proc fill_grid uses bx si di, \
     grid,mtrx
 
-    mov bx,[grid]       ; BX := указатель на структуру сетки
-    mov si,[mtrx]       ; SI := указатель на матрицу
-    add si,5            ; пропускаем заголовочную часть
+    mov bx,[grid]       ; BX := СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃС‚СЂСѓРєС‚СѓСЂСѓ СЃРµС‚РєРё
+    mov si,[mtrx]       ; SI := СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РјР°С‚СЂРёС†Сѓ
+    add si,5            ; РїСЂРѕРїСѓСЃРєР°РµРј Р·Р°РіРѕР»РѕРІРѕС‡РЅСѓСЋ С‡Р°СЃС‚СЊ
 
-    _calc_offset [bx],[bx+2],di ; DI := смещение на экране от (x, y)
+    _calc_offset [bx],[bx+2],di ; DI := СЃРјРµС‰РµРЅРёРµ РЅР° СЌРєСЂР°РЅРµ РѕС‚ (x, y)
 
-    ; loop не осилил этот цикл
-    _for cx=[bx+14] : cx>0 : -1 ; цикл по строкам
+    ; loop РЅРµ РѕСЃРёР»РёР» СЌС‚РѕС‚ С†РёРєР»
+    _for cx=[bx+14] : cx>0 : -1 ; С†РёРєР» РїРѕ СЃС‚СЂРѕРєР°Рј
         push cx
-        _for cx=[bx+12] : cx>0 : -1 ; цикл по столбцам
+        _for cx=[bx+12] : cx>0 : -1 ; С†РёРєР» РїРѕ СЃС‚РѕР»Р±С†Р°Рј
             push cx
 
-            ; Проверка: ячейка открыта?
+            ; РџСЂРѕРІРµСЂРєР°: СЏС‡РµР№РєР° РѕС‚РєСЂС‹С‚Р°?
             test byte[si],MASK_OPENED
             jz @f
 
-                ; Проверка: мина?
+                ; РџСЂРѕРІРµСЂРєР°: РјРёРЅР°?
                 test byte[si],MASK_MINE
                 jz .not_mine
 
-                    ; Отрисовка красной ячейки с '*'
+                    ; РћС‚СЂРёСЃРѕРІРєР° РєСЂР°СЃРЅРѕР№ СЏС‡РµР№РєРё СЃ '*'
                     stdcall draw_rect, di,[bx+16],[bx+16],CL_RED_0
                     stdcall draw_centered_char, di,[bx+16],[bx+16],'*',CL_BLACK
                     jmp .skip_switch
 
                 .not_mine:
-                ; Обычная открытая ячейка
+                ; РћР±С‹С‡РЅР°СЏ РѕС‚РєСЂС‹С‚Р°СЏ СЏС‡РµР№РєР°
                 stdcall draw_rect, di,[bx+16],[bx+16],CL_GREY_0
                 movzx dx,byte[si]
                 and dl,MASK_COUNT
@@ -532,17 +532,17 @@ proc fill_grid uses bx si di, \
                 jmp .skip_switch
 
             @@:
-            ; Ячейка закрыта
+            ; РЇС‡РµР№РєР° Р·Р°РєСЂС‹С‚Р°
             stdcall draw_cell_h, di,[bx+16]
 
-            ; Проверка: установлен флаг?
+            ; РџСЂРѕРІРµСЂРєР°: СѓСЃС‚Р°РЅРѕРІР»РµРЅ С„Р»Р°Рі?
             test byte[si],MASK_FLAG
             jz @f
                 stdcall draw_centered_char, di,[bx+16],[bx+16],'F',CL_RED_0
                 jmp .skip_switch
 
             @@:
-            ; Если это мина и игрок проиграл — показать мину
+            ; Р•СЃР»Рё СЌС‚Рѕ РјРёРЅР° Рё РёРіСЂРѕРє РїСЂРѕРёРіСЂР°Р» вЂ” РїРѕРєР°Р·Р°С‚СЊ РјРёРЅСѓ
             test byte[si],MASK_MINE
             jz @f
                 cmp byte[game_state],GAME_LOSE
@@ -551,21 +551,21 @@ proc fill_grid uses bx si di, \
                     jmp .skip_switch
 
             @@:
-            ; Вопросик
+            ; Р’РѕРїСЂРѕСЃРёРє
             test byte[si],MASK_QUESTION
             jz .skip_switch
                 stdcall draw_centered_char, di,[bx+16],[bx+16],'?',CL_RED_0
 
             .skip_switch:
             
-            ; Смещение на следующую ячейку по горизонтали
+            ; РЎРјРµС‰РµРЅРёРµ РЅР° СЃР»РµРґСѓСЋС‰СѓСЋ СЏС‡РµР№РєСѓ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё
             add di,[bx+16]
             inc di
             inc si
             pop cx
         _end
 
-        ; Переход к следующей строке (смещение по вертикали)
+        ; РџРµСЂРµС…РѕРґ Рє СЃР»РµРґСѓСЋС‰РµР№ СЃС‚СЂРѕРєРµ (СЃРјРµС‰РµРЅРёРµ РїРѕ РІРµСЂС‚РёРєР°Р»Рё)
         imul ax,[bx+16],SCR_W
         add di,ax
         add di,SCR_W
@@ -579,19 +579,19 @@ endp
 proc draw_button uses bx, \
     _button_
 
-    ; Автоматическая отрисовка панели кнопки
+    ; РђРІС‚РѕРјР°С‚РёС‡РµСЃРєР°СЏ РѕС‚СЂРёСЃРѕРІРєР° РїР°РЅРµР»Рё РєРЅРѕРїРєРё
     mov bx,[_button_]
     stdcall auto_draw_panel, bx
 
     mov bx,[_button_]
 
-    ; Получаем длину строки (названия кнопки)
+    ; РџРѕР»СѓС‡Р°РµРј РґР»РёРЅСѓ СЃС‚СЂРѕРєРё (РЅР°Р·РІР°РЅРёСЏ РєРЅРѕРїРєРё)
     mov dx,[bx+12]
     _set_seg es to ds
     stdcall arr_len, dx
     _unset_seg
 
-    ; AX := ширина текста (5 px * длина), CX := длина строки
+    ; AX := С€РёСЂРёРЅР° С‚РµРєСЃС‚Р° (5 px * РґР»РёРЅР°), CX := РґР»РёРЅР° СЃС‚СЂРѕРєРё
     mov ax,cx
     mov dx,5
     mul dx
@@ -599,18 +599,18 @@ proc draw_button uses bx, \
     imul cx,2
     add ax,cx
 
-    ; Центрирование по горизонтали (ширина кнопки - длина строки)
+    ; Р¦РµРЅС‚СЂРёСЂРѕРІР°РЅРёРµ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё (С€РёСЂРёРЅР° РєРЅРѕРїРєРё - РґР»РёРЅР° СЃС‚СЂРѕРєРё)
     mov cx,[bx]
     inc cx
     mov dx,[bx+4]
     sub dx,2
     stdcall centralize_cord, cx,dx,ax
 
-    ; CX := y + 2 пикселя отступа
+    ; CX := y + 2 РїРёРєСЃРµР»СЏ РѕС‚СЃС‚СѓРїР°
     mov cx,[bx+2]
     add cx,2
 
-    ; Вычисляем смещение на экране и рисуем строку
+    ; Р’С‹С‡РёСЃР»СЏРµРј СЃРјРµС‰РµРЅРёРµ РЅР° СЌРєСЂР°РЅРµ Рё СЂРёСЃСѓРµРј СЃС‚СЂРѕРєСѓ
     _calc_offset ax,cx,dx   
     stdcall draw_string, dx,[bx+12],[bx+14]
 

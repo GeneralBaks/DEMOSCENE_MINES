@@ -9,13 +9,13 @@ endp
 
 proc reset_field
     movzx ax,[field_matrix.mines_total]
-    mov [mines_left],al                             ; Обновить счётчик мин
+    mov [mines_left],al                             ; РћР±РЅРѕРІРёС‚СЊ СЃС‡С‘С‚С‡РёРє РјРёРЅ
     
     mov dx,[field_matrix.size]
     sub dx,ax
-    mov [save_cells_left],dx                        ; Сколько ячеек осталось открыть
+    mov [save_cells_left],dx                        ; РЎРєРѕР»СЊРєРѕ СЏС‡РµРµРє РѕСЃС‚Р°Р»РѕСЃСЊ РѕС‚РєСЂС‹С‚СЊ
     
-    stdcall word_to_str, ax,str_mines_num           ; Преобразовать число мин в строку
+    stdcall word_to_str, ax,str_mines_num           ; РџСЂРµРѕР±СЂР°Р·РѕРІР°С‚СЊ С‡РёСЃР»Рѕ РјРёРЅ РІ СЃС‚СЂРѕРєСѓ
     stdcall clear_matrix, field_matrix              
     ret
 endp
@@ -57,26 +57,26 @@ proc find_clicked_cell \
     mov bx,[grid]
     mov ax,[bx]
     mov dx,[bx+2]
-    _loop [bx+14]                                  ; Цикл по строкам
-        _loop [bx+12]                              ; Цикл по столбцам
+    _loop [bx+14]                                  ; Р¦РёРєР» РїРѕ СЃС‚СЂРѕРєР°Рј
+        _loop [bx+12]                              ; Р¦РёРєР» РїРѕ СЃС‚РѕР»Р±С†Р°Рј
             push ax dx
             
-            _if [cursor_x] < ax jmp .skip          ; Пропустить, если курсор левее
-            _if [cursor_y] < dx jmp .skip          ; Пропустить, если курсор выше
+            _if [cursor_x] < ax jmp .skip          ; РџСЂРѕРїСѓСЃС‚РёС‚СЊ, РµСЃР»Рё РєСѓСЂСЃРѕСЂ Р»РµРІРµРµ
+            _if [cursor_y] < dx jmp .skip          ; РџСЂРѕРїСѓСЃС‚РёС‚СЊ, РµСЃР»Рё РєСѓСЂСЃРѕСЂ РІС‹С€Рµ
             
             add ax,[bx+16]
-            _if [cursor_x] > ax jmp .skip          ; Пропустить, если курсор правее
+            _if [cursor_x] > ax jmp .skip          ; РџСЂРѕРїСѓСЃС‚РёС‚СЊ, РµСЃР»Рё РєСѓСЂСЃРѕСЂ РїСЂР°РІРµРµ
             
             add dx,[bx+16]
-            _if [cursor_y] > dx jmp .skip          ; Пропустить, если курсор ниже
+            _if [cursor_y] > dx jmp .skip          ; РџСЂРѕРїСѓСЃС‚РёС‚СЊ, РµСЃР»Рё РєСѓСЂСЃРѕСЂ РЅРёР¶Рµ
             
             pop dx ax
             
-            mov ax,[bx+12]                         ; Найденный столбец
+            mov ax,[bx+12]                         ; РќР°Р№РґРµРЅРЅС‹Р№ СЃС‚РѕР»Р±РµС†
             sub ax,cx
             inc ax
             
-            mov dx,[bx+14]                         ; Найденная строка
+            mov dx,[bx+14]                         ; РќР°Р№РґРµРЅРЅР°СЏ СЃС‚СЂРѕРєР°
             pop cx
             sub dx,cx
             inc dx
@@ -98,22 +98,22 @@ endp
 
 proc fm_main_grid_click
     stdcall find_clicked_cell, fm_main.pn_field.gr_field
-    _if cx == 0 jmp .end_proc                      ; Не кликнули по ячейке
+    _if cx == 0 jmp .end_proc                      ; РќРµ РєР»РёРєРЅСѓР»Рё РїРѕ СЏС‡РµР№РєРµ
     _if [game_state] == GAME_WIN jmp .end_proc
     _if [game_state] == GAME_LOSE jmp .end_proc
     
     dec ax     ; ax = col (0-based)
     dec dx     ; dx = row (0-based)
     stdcall restore_cursor_background, [cursor_x],[cursor_y]
-    _if byte[mouse_button] == BTN_LEFT ; ЛКМ: открыть ячейку
+    _if byte[mouse_button] == BTN_LEFT ; Р›РљРњ: РѕС‚РєСЂС‹С‚СЊ СЏС‡РµР№РєСѓ
         push ax dx
         _if [game_state] == GAME_WAIT ; 
             mov byte[game_state],GAME_PLAY
-            stdcall generate_mines, field_matrix,ax,dx,[rand_prev] ; Генерация мин
+            stdcall generate_mines, field_matrix,ax,dx,[rand_prev] ; Р“РµРЅРµСЂР°С†РёСЏ РјРёРЅ
         _end
         pop dx ax
         _mcall fm_main.pn_field.gr_field:open_cell, <field_matrix,ax,dx>
-    _elseif byte[mouse_button] == BTN_RIGHT ; ПКМ: пометить ячейку
+    _elseif byte[mouse_button] == BTN_RIGHT ; РџРљРњ: РїРѕРјРµС‚РёС‚СЊ СЏС‡РµР№РєСѓ
         stdcall set_cell_char, fm_main.pn_field.gr_field,field_matrix,ax,dx 
     _end
     
@@ -156,8 +156,8 @@ endp
 proc fm_main_options_button_click
     test [mouse_button],BTN_LEFT
     _if zf == 0 
-        stdcall draw_fm_options                      ; Открытие окна опций
-        mov [active_form_index], ACTIVE_OPTIONS     ; Установка активной формы
+        stdcall draw_fm_options                      ; РћС‚РєСЂС‹С‚РёРµ РѕРєРЅР° РѕРїС†РёР№
+        mov [active_form_index], ACTIVE_OPTIONS     ; РЈСЃС‚Р°РЅРѕРІРєР° Р°РєС‚РёРІРЅРѕР№ С„РѕСЂРјС‹
     _end
     ret
 endp
